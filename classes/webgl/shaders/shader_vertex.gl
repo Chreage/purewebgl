@@ -1,0 +1,17 @@
+attribute vec3 position;
+attribute vec2 UV;
+
+uniform vec3 centre;
+uniform float scale;
+uniform mat4 matrice_vue, matrice_projection, matrice_objet;
+
+
+varying vec2 vUV;
+varying vec3 vNormal;
+
+void main(void) {
+    vNormal=position;
+    vec3 pos=(position*scale)+centre;
+    gl_Position = matrice_projection * matrice_vue * matrice_objet * vec4(pos, 1.0);    
+    vUV = UV;
+}
