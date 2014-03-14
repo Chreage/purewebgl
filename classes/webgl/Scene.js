@@ -5,7 +5,7 @@ var SCENE;
 var Scene=(function () {
     return {
         instance: function(spec) {
-            var objets=[], lsystems=[], navigation=false;
+            var objets=[], lsystems=[], navigation=false, running=false;
 
             var drawObjet=function(objet) {
                 objet.draw();
@@ -23,7 +23,18 @@ var Scene=(function () {
             var highlightedNode=false;
 
             var that={
+                
+                   start: function(){
+                       running=true;
+                       that.draw();
+                   },
+                   
+                   stop: function(){
+                       running=false;
+                   },
+                   
                    draw: function(timestamp) {
+                       if (!running) return;
                        GL.viewport(0.0, 0.0, CV.width, CV.height);
                        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
                        VUE.draw();
@@ -32,7 +43,7 @@ var Scene=(function () {
                        lsystems.map(drawObjet);
                        
                        GL.flush();
-                       window.requestAnimationFrame(SCENE.draw);
+                       window.requestAnimationFrame(that.draw);
                    },
 
                    drawPhysics: function() {                       

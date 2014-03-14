@@ -10,6 +10,9 @@ var Contexte=(function() {
             
             try {
 		GL = canvas.getContext("experimental-webgl", {antialias: true});
+                var EXT = GL.getExtension("OES_element_index_uint") ||
+                GL.getExtension("MOZ_OES_element_index_uint") ||
+                GL.getExtension("WEBKIT_OES_element_index_uint");
             } catch (e) {
 		alert("Webgl not found") ;
                 return false;
@@ -17,8 +20,9 @@ var Contexte=(function() {
             
             var scene=Scene.instance({});
             var shaders=Shaders.instance({});
-
-            var vue=Vue.instance({camera: [0,0,-50], theta: 0, phi: 0, angle: 45, zMin: 1, zMax: 500});
+            Shaders.set_defaultShader();
+            
+            var vue=Vue.instance({camera: [0,0,-50], theta: 0, phi: 0, angle: 45, zMin: 2, zMax: 100});
             vue.plein_ecran();
 
             var nav=Navigation.instance({vue: vue});
@@ -49,11 +53,13 @@ var Contexte=(function() {
                 var dataObj=JSON.parse(data);
                 var alexa=dataObj.alexa;
 
+                scene.start();
                 var lsystem=Lsystem.instance({nGenerations: 12, centre: [0,0,0], list: alexa, offset: 0, gap: 1});
                 scene.add_Lsystem(lsystem);
 
                 console.log("Done !");
-                scene.draw();
+                //scene.start();
+                
                 var timer_physics=setInterval(SCENE.drawPhysics, 16);
 
                 var showGen=function() {

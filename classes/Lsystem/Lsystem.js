@@ -118,6 +118,15 @@ var Lsystem=(function() {
             });
 
             
+            //compute heightMap
+            var heightmapSurface=HeightmapSurface.instance({
+                AABB : AABB,
+                size: 512,
+                margin: 2,
+                gl: GL,
+                nodes: nodes
+            });
+            
             var drawNode=function(node){
                 SHADERS.set_hightLight(node.highlight);
                 if (node.generation<CURRENTGEN) {
@@ -129,6 +138,8 @@ var Lsystem=(function() {
                 draw: function() {
                     sphere.drawResources();
                     nodes.map(drawNode);
+                    
+                    heightmapSurface.drawSurface();
                 },
 
                 pick: function(camera, u) {

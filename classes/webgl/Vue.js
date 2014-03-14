@@ -42,6 +42,10 @@ var Vue=(function() {
                 draw: function() {
                     SHADERS.set_matriceVue(matrice_vue);
                 },
+                drawHeightMapSurface: function() {
+                    SHADERS.set_matriceVue_heightMapSurface(matrice_vue);
+                    SHADERS.set_matriceProjection_heightMapSurface(matrice_projection);
+                },
                 drawPhysics: function() {
 
                 },

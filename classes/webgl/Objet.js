@@ -10,6 +10,11 @@ var Objet=(function() {
             var texture=spec.texture || false;
             var matrix=lib_matrix4.copyNew(spec.matrix);
             var that={
+                drawAsHeightMapSurface: function() {
+                    SHADERS.set_matriceObjet_heightMapSurface(matrix);
+                    spec.maillage.drawAsHeightMapSurface();
+                },
+            
                 draw: function() {
                     if (texture) texture.draw();
                     SHADERS.set_matriceObjet(matrix);
@@ -35,12 +40,14 @@ var Objet=(function() {
                     if (texture) texture.draw();
                     SHADERS.set_matriceObjet(matrix);
                     spec.maillage.drawVBO();
+                    spec.maillage.bindVBOIndices();
+                    
                 },
 
                 drawInstance: function(scale, position) {
                     SHADERS.set_scale(scale);
                     SHADERS.set_position(position);
-                    spec.maillage.drawVBOIndices();
+                    spec.maillage.drawVBOIndices_opt();
                 }
             };
             return that;

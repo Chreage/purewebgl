@@ -1,0 +1,5 @@
+- bouger les spheres après un readpixel sur heightmap
+- calcul des normales de la heightmap et stockage dans les canaux GBA
+- shaders de rendu des sphères avec transparence
+- fog + skydome
+- navigation plus ergonomique

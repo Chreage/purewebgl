@@ -10,9 +10,19 @@ var VBO=(function() {
 	  		  new Float32Array(spec.tableau_js),
 			  GL.STATIC_DRAW);
             return {
-                draw: function() {                   
+                draw: function() { //for default rendering (nodes)             
                    GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
                    SHADERS.set_vertexPointers();
+                },
+                
+                draw_heightMap: function() { //draw with heightmap creation shaders
+                    GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
+                    SHADERS.set_vertexPointers_heightMap();
+                },
+                
+                drawAsHeightMapSurface: function() {  //draw with heightmap surface shaders
+                    GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
+                    SHADERS.set_vertexPointers_heightMapSurface();
                 }
             }
        }

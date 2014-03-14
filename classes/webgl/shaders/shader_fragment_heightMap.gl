@@ -1,0 +1,12 @@
+precision mediump float;
+
+uniform sampler2D sampler;
+uniform float alpha;
+
+varying vec2 vUV;
+
+void main(void) {
+    vec4 colorGauss=texture2D(sampler, vUV);
+    colorGauss.a=colorGauss.r*alpha;
+    gl_FragColor = colorGauss;
+}
