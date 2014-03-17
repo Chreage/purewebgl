@@ -7,6 +7,10 @@ var lib_vector={
         return Math.sqrt((A[0]-B[0])*(A[0]-B[0])+(A[1]-B[1])*(A[1]-B[1])+(A[2]-B[2])*(A[2]-B[2]));
     },
 
+    distance2: function(A,B) {
+        return (A[0]-B[0])*(A[0]-B[0])+(A[1]-B[1])*(A[1]-B[1])+(A[2]-B[2])*(A[2]-B[2]);
+    },
+
     size2: function(v) {
         return v[0]*v[0]+v[1]*v[1]+v[2]*v[2];
     },

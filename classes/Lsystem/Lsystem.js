@@ -30,7 +30,10 @@ var Lsystem=(function() {
                 generation: nGeneration,
                 position: position,
                 highlight: 0,
-                label: label
+                label: label,
+                image: false,
+                weight: 0,
+                absPosition: [0,0,0]
             }
 	}
 
@@ -110,13 +113,6 @@ var Lsystem=(function() {
                  computerNextGeneration();                   
             }
 
-
-            //compute octree
-            var octree=Octree.instance({
-                AABB: AABB,
-                nodes: nodes
-            });
-
             
             //compute heightMap
             var heightmapSurface=HeightmapSurface.instance({
@@ -124,10 +120,30 @@ var Lsystem=(function() {
                 size: 512,
                 margin: 2,
                 gl: GL,
+                nodes: nodes,
+                hMax: 4,
+                centre: spec.centre
+            });
+
+            //move spheres above heightmap
+            heightmapSurface.moveNodesAbove();
+
+            //compute octree
+            var octree=Octree.instance({
+                AABB: AABB,
                 nodes: nodes
+            });
+
+            //compte absolute position
+            nodes.map(function(node){
+                node.absPosition[0]=node.position[0]+spec.centre[0],
+                node.absPosition[1]=node.position[1]+spec.centre[1],
+                node.absPosition[2]=node.position[2]+spec.centre[2];
             });
             
             var drawNode=function(node){
+                if (node.weight<WEIGHTNODEMIN) return;
+                NNODESDISPLAYED++;
                 SHADERS.set_hightLight(node.highlight);
                 if (node.generation<CURRENTGEN) {
                     sphere.drawInstance(node.scale, node.position);
@@ -146,6 +162,18 @@ var Lsystem=(function() {
                     var pick=octree.intersect(camera, u);
                     if (pick) pick.lsystem=that;
                     return pick;
+                },
+
+                sort: function(camera){
+                    //refresh weight
+                    nodes.map(function(node){
+                        node.weight=lib_vector.distance(node.position, camera);
+                    })
+
+                    //sort by weight
+                    nodes.sort(function(nodeA, nodeB){
+                        return nodeA.weight-nodeB.weight;
+                    });
                 }
 
 

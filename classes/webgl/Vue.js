@@ -30,8 +30,7 @@ var Vue=(function() {
            
             var calcule_matrice=function() {
                 lib_matrix4.set_I4(matrice_vue);
-                //lib_matrix_rot4.rotateZ(matrice_vue, -spec.theta*Math.sin(spec.phi));
-                lib_matrix_rot4.rotateY(matrice_vue, spec.theta);
+                lib_matrix_rot4.rotateZ(matrice_vue, spec.theta);
                 
 
                 lib_matrix_rot4.rotateX(matrice_vue, spec.phi);
@@ -40,11 +39,15 @@ var Vue=(function() {
 
             var that={
                 draw: function() {
-                    SHADERS.set_matriceVue(matrice_vue);
+                    Shaders.set_matriceVue(matrice_vue);
                 },
                 drawHeightMapSurface: function() {
-                    SHADERS.set_matriceVue_heightMapSurface(matrice_vue);
-                    SHADERS.set_matriceProjection_heightMapSurface(matrice_projection);
+                    Shaders.set_matriceVue_heightMapSurface(matrice_vue);
+                    Shaders.set_matriceProjection_heightMapSurface(matrice_projection);
+                },
+                draw_water: function() {
+                    Shaders.set_matrices_water(matrice_projection, matrice_vue);
+                    Shaders.set_camera_water(spec.camera);
                 },
                 drawPhysics: function() {
 
@@ -65,18 +68,21 @@ var Vue=(function() {
                     calcule_matrice();
                 },
 
-                translateXVue: function(d)  {
-                    spec.camera[0]+=d;
+                translateXVue: function(d)  { //left/right arrow
+                    spec.camera[0]+=d*Math.cos(spec.theta);
+                    spec.camera[1]-=d*Math.sin(spec.theta);
+
                     calcule_matrice();
                 },
 
-                translateYVue: function(d)  {
+                translateYVue: function(d)  { //mouse wheel
                     spec.camera[2]+=d;
                     calcule_matrice();
                 },
 
-                translateZVue: function(d)  {
-                    spec.camera[1]+=d;
+                translateZVue: function(d)  { //up/down arrow
+                    spec.camera[1]+=d*Math.cos(spec.theta);
+                    spec.camera[0]+=d*Math.sin(spec.theta);
                     calcule_matrice();
                 },
 

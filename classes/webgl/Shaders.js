@@ -15,9 +15,9 @@ var Shaders=(function (){
             return shader;
     };
 
-    var get_shaderProgram=function(vertex_source, fragment_source){
-            shader_vertex=get_shader(vertex_source, GL.VERTEX_SHADER, "VERTEX_SHADER");
-            shader_fragment=get_shader(fragment_source, GL.FRAGMENT_SHADER, "FRAGMENT_SHADER");
+    var get_shaderProgram=function(vertex_source, fragment_source, strtype){
+            var shader_vertex=get_shader(vertex_source, GL.VERTEX_SHADER, strtype+" VERTEX_SHADER");
+            var shader_fragment=get_shader(fragment_source, GL.FRAGMENT_SHADER, strtype+" FRAGMENT_SHADER");
             shader_program=GL.createProgram();
 
             GL.attachShader(shader_program, shader_vertex);
@@ -27,6 +27,54 @@ var Shaders=(function (){
 
             return shader_program;
     }
+
+    //WATER SHADERS
+    var shader_vertex_source_water="$SHADER_VERTEX_WATER$",
+        shader_fragment_source_water="$SHADER_FRAGMENT_WATER$",
+        shader_program_water;
+
+    var matrice_vue_water,
+        matrice_projection_water,
+        matrice_objet_water,
+        matrice_objet_inv_water,
+        position_water,
+        samplerCiel_water,
+        samplerFond_water,
+        camera_water,
+        amplitudes_water,
+        ks_water,
+        ws_water,
+        indice_refraction_water,
+        profondeur_water,
+        couleur_eau_water,
+        visibilite_water,
+        lumiere_water,
+        time_water;
+
+
+
+
+    //TEXTURE READ SHADERS
+    var shader_vertex_source_textureRead="$SHADER_VERTEX_TEXTUREREAD$",
+        shader_fragment_source_textureRead="$SHADER_FRAGMENT_TEXTUREREAD$";
+
+    var shader_program_textureRead;
+
+    var position_textureRead,
+        sampler_textureRead;
+
+
+
+    //HEIGHTMAP TO NORMAL MAP VARS
+     var shader_vertex_source_normals="$SHADER_VERTEX_NORMALS$",
+        shader_fragment_source_normals="$SHADER_FRAGMENT_NORMALS$";
+
+    var shader_program_normals;
+
+    var position_normals,
+        sampler_normals,
+        wh_normals;
+
 
     //HEIGHTMAP RENDERING VARS
     var shader_vertex_source_heightMap="$SHADER_VERTEX_HEIGHTMAP$",
@@ -47,8 +95,10 @@ var Shaders=(function (){
     var shader_program_heightMapSurface;
     
     var scale_heightMapSurface, centre_heightMapSurface,
+        scaleUV_heightMapSurface,
         position_heightMapSurface,
         sampler_heightMapSurface,
+        samplerNormals_heightMapSurface,
         samplerHeightMap_heightMapSurface,
         hMax_heightMapSurface,
         matrice_objet_heightMapSurface,
@@ -72,16 +122,54 @@ var Shaders=(function (){
 
 
     var that={
-        instance: function(spec) {    
+        instance: function(spec) {
+            //WATER SHADERS
+            shader_program_water=get_shaderProgram(shader_vertex_source_water, shader_fragment_source_water, "WATER");
+            matrice_projection_water = GL.getUniformLocation(shader_program_water, "matrice_projection");
+            matrice_vue_water = GL.getUniformLocation(shader_program_water, "matrice_vue");
+            matrice_objet_water = GL.getUniformLocation(shader_program_water, "matrice_objet");
+            matrice_objet_inv_water = GL.getUniformLocation(shader_program_water, "matrice_objet_inv");
+            camera_water = GL.getUniformLocation(shader_program_water, "camera");
+            samplerCiel_water = GL.getUniformLocation(shader_program_water, "samplerCiel");
+            samplerFond_water = GL.getUniformLocation(shader_program_water, "samplerFond");
+            amplitudes_water=GL.getUniformLocation(shader_program_water, "As");
+            ks_water=GL.getUniformLocation(shader_program_water, "ks");
+            ws_water=GL.getUniformLocation(shader_program_water, "ws");
+            indice_refraction_water=GL.getUniformLocation(shader_program_water, "i");
+            profondeur_water=GL.getUniformLocation(shader_program_water, "H");
+            couleur_eau_water=GL.getUniformLocation(shader_program_water, "couleur_eau");
+            visibilite_water=GL.getUniformLocation(shader_program_water, "visibilite");
+            lumiere_water=GL.getUniformLocation(shader_program_water, "lumiere");
+            time_water=GL.getUniformLocation(shader_program_water, "t");
+
+            position_water = GL.getAttribLocation(shader_program_water, "position");
+            
+            
+
+            //TEXTURE READ SHADERS
+            shader_program_textureRead=get_shaderProgram(shader_vertex_source_textureRead, shader_fragment_source_textureRead, "TEXTURE READ");
+            sampler_textureRead = GL.getUniformLocation(shader_program_textureRead, "sampler");
+            position_textureRead = GL.getAttribLocation(shader_program_textureRead, "position");
+
+
+            //HEIGHTMAP TO NORMALS MAP RENDERING
+            shader_program_normals=get_shaderProgram(shader_vertex_source_normals, shader_fragment_source_normals, "NORMALS");
+            sampler_normals = GL.getUniformLocation(shader_program_normals, "sampler");
+            wh_normals = GL.getUniformLocation(shader_program_normals, "wh");
+            position_normals = GL.getAttribLocation(shader_program_normals, "position");
+
+
             //HEIGHTMAPSURFACE RENDERING
-            shader_program_heightMapSurface=get_shaderProgram(shader_vertex_source_heightMapSurface, shader_fragment_source_heightMapSurface);
+            shader_program_heightMapSurface=get_shaderProgram(shader_vertex_source_heightMapSurface, shader_fragment_source_heightMapSurface, "HEIGHTMAP SURFACE");
             matrice_projection_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "matrice_projection");
             matrice_vue_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "matrice_vue");
             matrice_objet_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "matrice_objet");
-	   
+
+            scaleUV_heightMapSurface=GL.getUniformLocation(shader_program_heightMapSurface, "scaleUV");
             scale_heightMapSurface=GL.getUniformLocation(shader_program_heightMapSurface, "scale");
             centre_heightMapSurface=GL.getUniformLocation(shader_program_heightMapSurface, "centre");
             sampler_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "sampler");
+            samplerNormals_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "samplerNormals");
             samplerHeightMap_heightMapSurface =  GL.getUniformLocation(shader_program_heightMapSurface, "samplerHeightMap");
 	    hMax_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "hMax");
 	    
@@ -89,7 +177,7 @@ var Shaders=(function (){
             
             
             //HEIGHTMAP RENDERING
-            shader_program_heightMap=get_shaderProgram(shader_vertex_source_heightMap, shader_fragment_source_heightMap);
+            shader_program_heightMap=get_shaderProgram(shader_vertex_source_heightMap, shader_fragment_source_heightMap, "HEIGHTMAP");
             scale_heightMap=GL.getUniformLocation(shader_program_heightMap, "scale");
             centre_heightMap=GL.getUniformLocation(shader_program_heightMap, "centre");
             sampler_heightMap = GL.getUniformLocation(shader_program_heightMap, "sampler");
@@ -100,7 +188,7 @@ var Shaders=(function (){
             
             
             //DEFAULT RENDERING
-            shader_program=get_shaderProgram(shader_vertex_source, shader_fragment_source);
+            shader_program=get_shaderProgram(shader_vertex_source, shader_fragment_source, "DEFAULT");
 
             matrice_projection = GL.getUniformLocation(shader_program, "matrice_projection");
             matrice_vue = GL.getUniformLocation(shader_program, "matrice_vue");
@@ -175,6 +263,7 @@ var Shaders=(function (){
             GL.enableVertexAttribArray(position_heightMapSurface);
             GL.uniform1i(sampler_heightMapSurface, 0);
             GL.uniform1i(samplerHeightMap_heightMapSurface, 1);
+            GL.uniform1i(samplerNormals_heightMapSurface, 2);
         },
         unset_heightMapSurface_shaders: function() {
             GL.disableVertexAttribArray(position_heightMapSurface);
@@ -190,15 +279,91 @@ var Shaders=(function (){
         },
         set_matriceVue_heightMapSurface: function(matrice) {
             GL.uniformMatrix4fv(matrice_vue_heightMapSurface, false, matrice);
-        },
+        },        
         set_hMax_heightMapSurface: function(hMax){
             GL.uniform1f(hMax_heightMapSurface, hMax);
         },
         set_dim_heightMapSurface: function(scale, centre){
             GL.uniform2fv(scale_heightMapSurface, scale);
             GL.uniform2fv(centre_heightMapSurface,centre);
+        },
+        set_scaleUV_heightMapSurface: function(scaleU, scaleV){
+            GL.uniform2f(scaleUV_heightMapSurface, scaleU, scaleV);
+        },
+
+
+        //HEIGHTMAP TO NORMAL MAP RENDERING
+        set_normals_shaders: function() {
+            GL.useProgram(shader_program_normals);
+            GL.enableVertexAttribArray(position_normals);
+            GL.uniform1i(sampler_normals,0);
+        },
+        unset_normals_shaders: function() {
+            GL.disableVertexAttribArray(position_normals);
+        },
+        set_vertexPointers_normals: function() {
+            GL.vertexAttribPointer(position_normals, 2, GL.FLOAT, false,8,0) ;
+        },
+        set_wh: function(w,h){
+            GL.uniform2f(wh_normals,w,h);
+        },
+
+
+
+        //SIMPLE TEXTURE RENDERING
+        set_textureRead_shaders: function() {
+            GL.useProgram(shader_program_textureRead);
+            GL.enableVertexAttribArray(position_textureRead);
+            GL.uniform1i(sampler_textureRead,0);
+        },
+        unset_textureRead_shaders: function() {
+            GL.disableVertexAttribArray(position_textureRead);
+        },
+        set_vertexPointers_textureRead: function() {
+            GL.vertexAttribPointer(position_textureRead, 2, GL.FLOAT, false,8,0) ;
+        },
+
+
+        //WATER RENDERING
+        set_water_shader: function() {
+            GL.useProgram(shader_program_water);
+            GL.enableVertexAttribArray(position_water);
+            GL.uniform1i(samplerCiel_water, 0);
+            GL.uniform1i(samplerFond_water, 1);
+        },
+        unset_water_shader: function() {
+            GL.disableVertexAttribArray(position_water);
+        },
+        set_time_water: function(t) {
+            GL.uniform1f(time_water, t);
+        },
+        set_liquid_water: function(i, h, couleur,vis,lum) {
+            GL.uniform1f(indice_refraction_water, i);
+            GL.uniform1f(profondeur_water, h);
+            GL.uniform4fv(couleur_eau_water, couleur);
+            GL.uniform1f(visibilite_water, vis);
+            GL.uniform3fv(lumiere_water, lum);
+        },
+        set_vagues_water: function(as, ks_, ws_) {
+            GL.uniform1fv(amplitudes_water, as);
+            GL.uniform2fv(ks_water, ks_);
+            GL.uniform1fv(ws_water, ws_);
+        },
+        set_matrices_water: function(projection, vue) {
+            GL.uniformMatrix4fv(matrice_projection_water, false, projection);
+            GL.uniformMatrix4fv(matrice_vue_water, false, vue);
+        },
+        set_matriceObjet_water: function(matrice, matrice_inv) {
+            GL.uniformMatrix4fv(matrice_objet_water, false, matrice);
+            GL.uniformMatrix4fv(matrice_objet_inv_water, false, matrice_inv);
+        },
+        set_camera_water: function(c) {
+            GL.uniform3fv(camera_water, c);
+        },
+        set_vertexPointers_water: function() {
+            GL.vertexAttribPointer(position_water, 3, GL.FLOAT, false,12,0);
         }
-        
+
         
     };
     SHADERS=that;

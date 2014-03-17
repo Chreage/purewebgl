@@ -1,6 +1,7 @@
 /*
  * spec.vertices : tableau js des vertex
  * spec.indices : tableau js des indices
+ * spec.int32Indices: boolean
  */
 var Maillage=(function () {
     return {
@@ -33,6 +34,11 @@ var Maillage=(function () {
                 
                 drawVBOIndices_opt: function()  {
                     vbo_indices.draw_Elements();
+                },
+
+                draw_water: function() {
+                    vbo.draw_water();
+                    vbo_indices.draw();
                 }
             }
         }

@@ -1,0 +1,44 @@
+precision mediump float;
+
+uniform sampler2D sampler, samplerNormals;
+
+varying vec2 vUV;
+varying vec3 vNormal;
+
+const vec3 LIGHT=vec3(0.,0.,1.);
+const vec3 Z=vec3(0.,0.,1.);
+
+
+//normal mapping : retourne la matrice de rotation d'axe u et d'angle theta
+mat3 rot_angleAxe(float theta, vec3 u) {
+    float c=cos(theta);
+    float s=sin(theta);
+    return mat3(
+        u.x*u.x+(1.-u.x*u.x)*c,  u.x*u.y*(1.-c)-u.z*s,    u.x*u.z*(1.-c)+u.y*s,
+        u.x*u.y*(1.-c)+u.z*s,    u.y*u.y+(1.-u.y*u.y)*c,  u.y*u.z*(1.-c)-u.x*s,
+        u.x*u.z*(1.-c)-u.y*s,    u.y*u.z*(1.-c)+u.x*s,    u.z*u.z+(1.-u.z*u.z)*c
+    );
+}
+
+//normal mapping : retourne la matrice de rotation qui envoie u sur v. u et v sont unitaires
+mat3 rot_vectVect(vec3 u,vec3 v) {
+    vec3 axe=normalize(cross(v,u));
+    float theta=acos(dot(u,v));
+    return rot_angleAxe(theta, axe);
+}
+
+
+void main(void) {
+    
+    vec4 color=texture2D(sampler, vUV);
+    vec4 texture_normale=texture2D(samplerNormals, vUV);
+    vec3 n=vec3(2.*(texture_normale.x-0.5), 2.*(texture_normale.y-0.5), texture_normale.z);
+    mat3 rot=rot_vectVect(Z, normalize(vNormal));
+    vec3 bump_normal=rot*n;
+
+    //light intensity
+    float I=dot(bump_normal,LIGHT);
+
+   // color.rgb=vec3(.4,.4,.4);
+    gl_FragColor =  vec4(color.rgb*I, 1.);
+}

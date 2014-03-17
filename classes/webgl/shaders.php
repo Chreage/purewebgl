@@ -11,17 +11,36 @@
     }
 
     $replace=array(
-        stripShader("classes/webgl/shaders/shader_fragment_heightMapSurface.gl"),
-        stripShader("classes/webgl/shaders/shader_vertex_heightMapSurface.gl"),
+
+        stripShader("classes/webgl/shaders/water/shader_fragment_water.gl"),
+        stripShader("classes/webgl/shaders/water/shader_vertex_water.gl"),
+
+        stripShader("classes/webgl/shaders/textureRead/shader_fragment_textureRead.gl"),
+        stripShader("classes/webgl/shaders/textureRead/shader_vertex_textureRead.gl"),
+
+        stripShader("classes/webgl/shaders/normalMap/shader_fragment_normals.gl"),
+        stripShader("classes/webgl/shaders/normalMap/shader_vertex_normals.gl"),
+
+        stripShader("classes/webgl/shaders/heightMap/shader_fragment_heightMapSurface.gl"),
+        stripShader("classes/webgl/shaders/heightMap/shader_vertex_heightMapSurface.gl"),
         
-        stripShader("classes/webgl/shaders/shader_fragment_heightMap.gl"),
-        stripShader("classes/webgl/shaders/shader_vertex_heightMap.gl"),
+        stripShader("classes/webgl/shaders/heightMap/shader_fragment_heightMap.gl"),
+        stripShader("classes/webgl/shaders/heightMap/shader_vertex_heightMap.gl"),
         
-        stripShader("classes/webgl/shaders/shader_fragment.gl"),
-        stripShader("classes/webgl/shaders/shader_vertex.gl")
+        stripShader("classes/webgl/shaders/default/shader_fragment.gl"),
+        stripShader("classes/webgl/shaders/default/shader_vertex.gl")
     );
 
     $search=array(
+        "\$SHADER_FRAGMENT_WATER\$",
+        "\$SHADER_VERTEX_WATER\$",
+
+        "\$SHADER_FRAGMENT_TEXTUREREAD\$",
+        "\$SHADER_VERTEX_TEXTUREREAD\$",
+
+        "\$SHADER_FRAGMENT_NORMALS\$",
+        "\$SHADER_VERTEX_NORMALS\$",
+
         "\$SHADER_FRAGMENT_HEIGHTMAPSURFACE\$",
         "\$SHADER_VERTEX_HEIGHTMAPSURFACE\$",
         

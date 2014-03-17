@@ -19,10 +19,25 @@ var VBO=(function() {
                     GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
                     SHADERS.set_vertexPointers_heightMap();
                 },
+
+                draw_normalMap: function() { //draw with heightmap creation shaders (heightmap -> normal map)
+                    GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
+                    SHADERS.set_vertexPointers_normals();
+                },
+
+                draw_textureRead: function() { 
+                    GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
+                    SHADERS.set_vertexPointers_textureRead();
+                },
                 
                 drawAsHeightMapSurface: function() {  //draw with heightmap surface shaders
                     GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
                     SHADERS.set_vertexPointers_heightMapSurface();
+                },
+
+                draw_water: function() {
+                    GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
+                    SHADERS.set_vertexPointers_water();
                 }
             }
        }

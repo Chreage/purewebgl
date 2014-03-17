@@ -1,0 +1,59 @@
+precision mediump float;
+
+uniform sampler2D sampler;
+uniform vec2 wh;
+varying vec2 fragPos;
+const float H=100.;
+
+vec3 getPoint(float x, float y, vec2 uv, float dPx, float dPy){
+    vec4 t = texture2D(sampler, uv+vec2(x*dPx,y*dPy));
+    return vec3(x,y,H*t.x);
+}
+
+void main(void) {
+    float dPx=1./wh.x;
+    float dPy=1./wh.y;
+    vec2 uv=fragPos+vec2(.5, .5);
+    vec4 color=texture2D(sampler, uv);
+
+    vec3 origin=vec3(0.,0.,color.r*H);
+
+    float ly = uv.y < dPy ? 0. : uv.y - dPy;
+    float uy = uv.y > 1.-dPy ? 1. : uv.y + dPy;
+    float lx = uv.x < dPx ? 0. : uv.x - dPx;
+    float ux = uv.x > 1.-dPx ? 1. : uv.x + dPx;
+
+    vec3 points[9];
+    points[0]=getPoint(-1.,0., uv, dPx, dPy);
+    points[1]=getPoint(-1.,-1., uv, dPx, dPy);
+    points[2]=getPoint(0. ,-1., uv, dPx, dPy);
+    points[3]=getPoint(1. ,-1., uv, dPx, dPy);
+    points[4]=getPoint(1. ,0., uv, dPx, dPy);
+    points[5]=getPoint(1. ,1., uv, dPx, dPy);
+    points[6]=getPoint(0. ,1., uv, dPx, dPy);
+    points[7]=getPoint(-1.,1., uv, dPx, dPy);
+    points[8]=getPoint(-1.,0., uv, dPx, dPy); //same as point0
+
+    vec3 normals[8];
+    int j;
+    for (int i=0; i<8; i++){
+        vec3 v1=points[i]-origin;
+        vec3 v2=points[i+1]-origin;
+        vec3 n=cross(v1,v2);
+        normals[i]=normalize(n);
+    }
+
+    //moyenne sur les normales
+    vec3 normal=vec3(0.,0.,0.);
+    for (int j=0; j<8; j++){
+        normal+=normals[j];
+    }
+
+    normal/=8.;
+   
+    normal.xy=0.5+normal.xy*0.5;
+
+    gl_FragColor=vec4(color.r, normal);
+    //gl_FragColor=vec4(color.r, normal.xy, 1.);
+
+}

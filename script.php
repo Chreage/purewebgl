@@ -26,6 +26,7 @@ readfile("classes/Lsystem/Heightmap.js");
 readfile("classes/Lsystem/HeightmapSurface.js");
 readfile("classes/Lsystem/Lsystem.js");
 
+readfile("classes/water/SurfaceLiquide.js");
 
 readfile("main.js");
 ?>

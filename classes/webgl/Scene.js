@@ -5,7 +5,8 @@ var SCENE;
 var Scene=(function () {
     return {
         instance: function(spec) {
-            var objets=[], lsystems=[], navigation=false, running=false;
+            var objets=[], lsystems=[], navigation=false, running=false, cursor="auto", water=false;
+            var currentLsystemIndex=0;
 
             var drawObjet=function(objet) {
                 objet.draw();
@@ -21,7 +22,7 @@ var Scene=(function () {
             GL.clearDepth(1.0);
 
             var highlightedNode=false;
-
+            
             var that={
                 
                    start: function(){
@@ -35,6 +36,8 @@ var Scene=(function () {
                    
                    draw: function(timestamp) {
                        if (!running) return;
+                       NNODESDISPLAYED=0;
+                       
                        GL.viewport(0.0, 0.0, CV.width, CV.height);
                        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
                        VUE.draw();
@@ -42,14 +45,26 @@ var Scene=(function () {
                        objets.map(drawObjet);
                        lsystems.map(drawObjet);
                        
+                       if (water) water.draw();
+
                        GL.flush();
+                       if (NNODESDISPLAYED>NNODESDISPLAYEDMAX){
+                           WEIGHTNODEMIN/=WEIGHTNODEINCREASE;
+                       } else {
+                           WEIGHTNODEMIN*=WEIGHTNODEINCREASE;
+                       }
                        window.requestAnimationFrame(that.draw);
                    },
 
                    drawPhysics: function() {                       
                        VUE.drawPhysics();
+                       if (water) water.drawPhysics();
+
                        if (navigation) navigation.drawPhysics();
                        objets.map(drawObjetPhysics);
+
+                       currentLsystemIndex=(currentLsystemIndex+1)%LSYSTEMS.length;
+                       LSYSTEMS[currentLsystemIndex].sort(VUE.get_cameraPosition());
                    },
 
                    add_objet: function(objet) {
@@ -62,6 +77,10 @@ var Scene=(function () {
 
                    set_navigation: function(nav){
                        navigation=nav;
+                   },
+
+                   set_water: function(eau){
+                       water=eau;
                    },
 
                    pick: function(camera, u, Xp, Yp){
@@ -86,6 +105,10 @@ var Scene=(function () {
                        });
 
                        if (highlightedNode){
+                           if (cursor!="pointer"){
+                                CV.style.cursor="pointer";
+                                cursor="pointer";
+                           }
                            LABEL.innerHTML=highlightedNode.label;
                        }
 
@@ -93,6 +116,10 @@ var Scene=(function () {
                            highlightedNode.highlight=0;
                            highlightedNode=false;
                            LABEL.style.display="none";
+                           if (cursor!="auto"){
+                               cursor="auto";
+                               CV.style.cursor="auto";
+                           }
                        }
                    }
             };

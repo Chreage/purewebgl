@@ -36,6 +36,10 @@ var Objet=(function() {
                     that.drawPhysics=phyFunc;
                 },
 
+                set_position: function(pos){
+                    lib_matrix_mv.set_position(matrix, pos);
+                },
+
                 drawResources: function() {
                     if (texture) texture.draw();
                     SHADERS.set_matriceObjet(matrix);
