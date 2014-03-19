@@ -5,11 +5,11 @@ var RAY=false;
 var Navigation=(function () {
     return {
         instance: function(spec) {
-            var sensibilite_x=0.0007,
-                sensibilite_y=0.0005,
-                sensibilite_touche=0.09,
-                sensibilite_wheel=0.5,
-                amortissement_coeff=0.85,
+            var sensibilite_x=SETTINGS.navigation.mouse_sensibility_x,
+                sensibilite_y=SETTINGS.navigation.mouse_sensibility_y,
+                sensibilite_touche=SETTINGS.navigation.keyboard_sensibility,
+                sensibilite_wheel=SETTINGS.navigation.wheel_sensibility,
+                amortissement_coeff=SETTINGS.navigation.mouse_amortization,
                 theta=0,
                 phi=0,                
                 dX=0,

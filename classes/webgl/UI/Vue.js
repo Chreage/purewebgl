@@ -39,7 +39,7 @@ var Vue=(function() {
 
             var that={
                 draw: function() {
-                    Shaders.set_matriceVue(matrice_vue);
+                    Shaders.set_vue(matrice_vue, spec.camera);
                 },
                 drawHeightMapSurface: function() {
                     Shaders.set_matriceVue_heightMapSurface(matrice_vue);

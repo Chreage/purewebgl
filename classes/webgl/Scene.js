@@ -43,16 +43,23 @@ var Scene=(function () {
                        VUE.draw();
 
                        objets.map(drawObjet);
+                       
+                       GL.enable(GL.BLEND);
+                       GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
                        lsystems.map(drawObjet);
+                       GL.disable(GL.BLEND);
+                        
                        
                        if (water) water.draw();
 
                        GL.flush();
-                       if (NNODESDISPLAYED>NNODESDISPLAYEDMAX){
-                           WEIGHTNODEMIN/=WEIGHTNODEINCREASE;
-                       } else {
-                           WEIGHTNODEMIN*=WEIGHTNODEINCREASE;
-                       }
+                       
+                       var dNodesDisplayed=Math.min(NNODESDISPLAYED-NNODESDISPLAYEDMAX, NNODESDISPLAYEDMAX);
+                        WEIGHTNODEMIN+=((dNodesDisplayed>0)?1:-1)
+                                     * WEIGHTNODEINCREASE
+                                    * Math.abs(dNodesDisplayed/NNODESDISPLAYEDMAX);
+                       
+                            
                        window.requestAnimationFrame(that.draw);
                    },
 
@@ -96,8 +103,8 @@ var Scene=(function () {
                             } else {                                
                                 LABEL.style.display="block";
                             }
-                            LABEL.style.top=Yp+"px",
-                            LABEL.style.left=Xp+"px";
+                            LABEL.style.top=(Yp+24)+"px",
+                            LABEL.style.left=(Xp+24)+"px";
 
                             highlightedNode=pick.node;
                             pick.node.highlight=1;
@@ -105,21 +112,22 @@ var Scene=(function () {
                        });
 
                        if (highlightedNode){
-                           if (cursor!="pointer"){
+                           if (cursor!=="pointer"){
                                 CV.style.cursor="pointer";
                                 cursor="pointer";
                            }
                            LABEL.innerHTML=highlightedNode.label;
+                       } else {
+                           if (cursor!=="auto"){
+                               cursor="auto";
+                               CV.style.cursor="auto";
+                           }
                        }
 
                        if (!lsystempicked && highlightedNode){
                            highlightedNode.highlight=0;
                            highlightedNode=false;
                            LABEL.style.display="none";
-                           if (cursor!="auto"){
-                               cursor="auto";
-                               CV.style.cursor="auto";
-                           }
                        }
                    }
             };

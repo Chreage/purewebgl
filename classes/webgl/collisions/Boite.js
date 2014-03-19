@@ -63,6 +63,7 @@ var Boite=(function() {
                         var i, intersection=false, node, d;
                         for (i=0; i<inside_nodes.length; i++) {
                             node=inside_nodes[i];
+                            if (node.weight<WEIGHTNODEMIN-WEIGHTALPHATOL) continue; //pick visible only
                             if (lib_intersect.intersect_ray_sphere(P,u,node.position, node.scale)) {
                                 d=lib_vector.distance(node.position, P);
                                 if (d<d_min){

@@ -2,6 +2,9 @@
  *  Inherit from Heightmap
  *  spec.hMax : hMax
  *  spec.centre : centre
+ *  
+ *  spec.textureColorURL : url of the texture
+ *  spec.textureNormalsURL
  */
 
 var HeightmapSurface=(function() {
@@ -12,10 +15,10 @@ var HeightmapSurface=(function() {
 
             
             var colorTexture=Texture.instance({
-                url: "images/textures/stones.jpg"
+                url: spec.textureColorURL || SETTINGS.Lsystems.textureColorURL
             });
             var normalsTexture=Texture.instance({
-                url: "images/textures/stones_normal.jpg"
+                url: spec.textureNormalsURL || SETTINGS.Lsystems.textureNormalsURL
             });
             
             var grid=Grid.instance({
@@ -26,8 +29,6 @@ var HeightmapSurface=(function() {
             grid.set_position(spec.centre);
             
             that.drawSurface=function() { //draw heightmap
-                // _gl.enable(_gl.BLEND);
-
                 Shaders.unset_defaultShader();
                 Shaders.set_heightMapSurface_shaders();
                 VUE.drawHeightMapSurface();
@@ -44,7 +45,6 @@ var HeightmapSurface=(function() {
                 
                 Shaders.unset_heightMapSurface_shaders();
                 Shaders.set_defaultShader();
-               //  _gl.disable(_gl.BLEND);
             }
             
             return that;

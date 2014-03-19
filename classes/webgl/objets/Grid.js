@@ -1,4 +1,4 @@
-/*
+/* Inherit from Objet class
  * 
  * grid object
  * 

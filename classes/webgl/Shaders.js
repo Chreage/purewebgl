@@ -116,8 +116,9 @@ var Shaders=(function (){
         matrice_objet,
         scale, centre,hightLight,
         position,
-        UV,
-        sampler;
+        camera,
+        sampler,
+        alpha;
 
 
 
@@ -194,28 +195,28 @@ var Shaders=(function (){
             matrice_vue = GL.getUniformLocation(shader_program, "matrice_vue");
             matrice_objet = GL.getUniformLocation(shader_program, "matrice_objet");
 	    sampler = GL.getUniformLocation(shader_program, "sampler");
-	    
+            camera = GL.getUniformLocation(shader_program, "camera");
+            
             scale=GL.getUniformLocation(shader_program, "scale");
             centre=GL.getUniformLocation(shader_program, "centre");
             hightLight=GL.getUniformLocation(shader_program, "hightLight");
+            alpha=GL.getUniformLocation(shader_program, "alpha");
 
             position = GL.getAttribLocation(shader_program, "position");
-            UV = GL.getAttribLocation(shader_program, "UV");
-	          
         },
 
         set_matriceProjection: function(matrice) {
             GL.uniformMatrix4fv(matrice_projection, false, matrice);
         },
-        set_matriceVue: function(matrice) {
+        set_vue: function(matrice, camPos) {
+            GL.uniform3fv(camera, camPos);
             GL.uniformMatrix4fv(matrice_vue, false, matrice);
         },
         set_matriceObjet: function(matrice) {
             GL.uniformMatrix4fv(matrice_objet, false, matrice);
         },
         set_vertexPointers: function() {
-            GL.vertexAttribPointer(position, 3, GL.FLOAT, false,20,0) ;
-            GL.vertexAttribPointer(UV, 2, GL.FLOAT, false,20,12) ;
+            GL.vertexAttribPointer(position, 3, GL.FLOAT, false,12,0);
         },
         set_scale: function(s){
             GL.uniform1f(scale, s);
@@ -223,17 +224,19 @@ var Shaders=(function (){
         set_position: function(pos){
             GL.uniform3fv(centre, pos)
         },
+        set_alpha: function(a){
+            GL.uniform1f(alpha, a);
+        },
         set_hightLight: function(hl){
             GL.uniform1f(hightLight, hl);
         },
         set_defaultShader: function() {
             GL.useProgram(shader_program);
             GL.enableVertexAttribArray(position);
-            GL.enableVertexAttribArray(UV);
+            GL.uniform1i(sampler, 0);
         },
         unset_defaultShader: function() {
             GL.disableVertexAttribArray(position);
-            GL.disableVertexAttribArray(UV);
         },
         
         

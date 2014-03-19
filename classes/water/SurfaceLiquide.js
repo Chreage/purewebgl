@@ -14,15 +14,15 @@
 var SurfaceLiquide=(function() {
     return {
         instance: function(spec) {
-            spec.centre=spec.centre || [0,0,0.1];
-            spec.i=spec.i || 1.33; //1.33;
-            spec.N=spec.N || 700;
-            spec.profondeur=spec.profondeur || 20;
-            spec.d=spec.d || 200;
+            spec.centre=spec.centre || SETTINGS.water.center;
+            spec.i=spec.i || SETTINGS.water.refractionIndice; //1.33;
+            spec.N=spec.N || SETTINGS.water.gridSize;
+            spec.profondeur=spec.profondeur || SETTINGS.water.depth;
+            spec.d=spec.d || SETTINGS.water.dimension;
             spec.lambda=spec.lambda || 8;
-            spec.couleur=spec.couleur || [0.1, 0.2, 0.2, 1.0];
-            spec.visibilite=spec.visibilite || 1.5;
-            spec.lumiere=spec.lumiere || [0,10,0];
+            spec.couleur=spec.couleur || SETTINGS.water.color;
+            spec.visibilite=spec.visibilite || SETTINGS.water.visibility;
+            spec.lumiere=spec.lumiere ||SETTINGS.light.direction; //[0,10,0];
 
             var matrix=lib_matrix4.get_I4(),
                 matrix_inv=lib_matrix4.get_I4();

@@ -1,4 +1,4 @@
-/*
+/* Inherit from Objet class
  * spec.centre : position du centre du cube. defaut : [0,0,0]
  * spec.rayon : rayon de la sphere. defaut : 1,
  * bandes : nombre de bandes. defaut : 16
@@ -21,9 +21,9 @@ var Sphere=(function() {
                     theta=(b/bandes)*2*Math.PI;
                     vertices.push(centre[0]+Math.cos(theta)*Math.cos(phi)*rayon, //X
                                   centre[1]+Math.sin(theta)*Math.cos(phi)*rayon, //Y
-                                  centre[2]+Math.sin(phi)*rayon,                 //Z
-                                  theta/(2*Math.PI),                             //U
-                                  (phi+Math.PI/2)/Math.PI                        //V
+                                  centre[2]+Math.sin(phi)*rayon                 //Z
+                                 // theta/(2*Math.PI),                             //U
+                                 // (phi+Math.PI/2)/Math.PI                        //V
                                   );
                     
                     if (c!=0 ) {

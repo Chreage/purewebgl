@@ -12,8 +12,6 @@ var Heightmap=(function() {
             spec.size=spec.size || 1024;
             spec.margin=spec.margin || 1;
             
-            
-            
             var _gl=spec.gl
             var nGauss=16;
             var nUV=10;
@@ -235,12 +233,8 @@ var Heightmap=(function() {
                      }
                      
                      spec.nodes.map(moveNode);
-
                      spec.AABB.zMax+=spec.hMax;
-
                 }
-                
-                
                 
             }
             that.compute();

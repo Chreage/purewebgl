@@ -4,6 +4,6 @@ body {
 }
 
 .label {
-    position: absolute; display: block; background-color: rgba(0,0,0,0.7); color: white; font-size: 14pt; padding: 10px;
+    position: absolute; display: none; background-color: rgba(0,0,0,0.7); color: white; font-size: 14pt; padding: 10px;
 }
 

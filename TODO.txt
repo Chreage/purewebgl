@@ -1,3 +1,4 @@
-- shaders de rendu des sph�res avec transparence
+- iles englobantes
 - fog + skydome
+- fleuves
 

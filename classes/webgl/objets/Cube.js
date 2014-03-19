@@ -1,4 +1,4 @@
-/*
+/* Inherit from Objet class
  * spec.centre : position du centre du cube. defaut : [0,0,0]
  * spec.l : taille d'une arrete du cube. defaut : 1
  */
