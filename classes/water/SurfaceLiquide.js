@@ -106,12 +106,12 @@ var SurfaceLiquide=(function() {
                 maillage.draw_water();
 
                 Shaders.unset_water_shader();
-                Shaders.set_defaultShader();
+                
                 GL.disable(GL.BLEND);
             };
             
             that.drawPhysics=function() {
-                time+=0.01;
+                time+=SETTINGS.water.speed;
             }
                 
             

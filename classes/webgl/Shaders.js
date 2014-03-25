@@ -98,14 +98,36 @@ var Shaders=(function (){
         scaleUV_heightMapSurface,
         position_heightMapSurface,
         sampler_heightMapSurface,
+        sampler_islandHeightMap,
         samplerNormals_heightMapSurface,
         samplerHeightMap_heightMapSurface,
         hMax_heightMapSurface,
+        hMaxIsland_heightMapSurface,
+        scaleIsland_heightMapSurface,
+        offsetIsland_heightMapSurface,
         matrice_objet_heightMapSurface,
         matrice_vue_heightMapSurface,
         matrice_projection_heightMapSurface;
     
-    //DEFAULT RENDERING VARS
+    //ISLAND HEIGHTMAP SURFACE RENDERING VARS
+    var shader_vertex_source_islandHeightMapSurface="$SHADER_VERTEX_ISLANDHEIGHTMAPSURFACE$",
+        shader_fragment_source_islandHeightMapSurface="$SHADER_FRAGMENT_ISLANDHEIGHTMAPSURFACE$";
+        
+    var shader_program_islandHeightMapSurface;
+    
+    var scale_islandHeightMapSurface, centre_islandHeightMapSurface,
+        scaleUV_islandHeightMapSurface,
+        position_islandHeightMapSurface,
+        sampler_islandHeightMapSurface,
+        samplerNormals_islandHeightMapSurface,
+        samplerHeightMap_islandHeightMapSurface,
+        hMax_islandHeightMapSurface,
+        matrice_objet_islandHeightMapSurface,
+        matrice_vue_islandHeightMapSurface,
+        matrice_projection_islandHeightMapSurface;
+        
+    
+    //GLASS RENDERING VARS
     var shader_vertex_source="$SHADER_VERTEX$",
         shader_fragment_source="$SHADER_FRAGMENT$";
 
@@ -170,11 +192,31 @@ var Shaders=(function (){
             scale_heightMapSurface=GL.getUniformLocation(shader_program_heightMapSurface, "scale");
             centre_heightMapSurface=GL.getUniformLocation(shader_program_heightMapSurface, "centre");
             sampler_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "sampler");
+            sampler_islandHeightMap = GL.getUniformLocation(shader_program_heightMapSurface, "samplerIsland");
             samplerNormals_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "samplerNormals");
             samplerHeightMap_heightMapSurface =  GL.getUniformLocation(shader_program_heightMapSurface, "samplerHeightMap");
 	    hMax_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "hMax");
-	    
+	    hMaxIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "hMaxIsland");
+            offsetIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "offsetIsland");
+            scaleIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "scaleIsland");
             position_heightMapSurface = GL.getAttribLocation(shader_program_heightMapSurface, "position");
+            
+            
+            //ISLAND HEIGHTMAPSURFACE RENDERING
+            shader_program_islandHeightMapSurface=get_shaderProgram(shader_vertex_source_islandHeightMapSurface, shader_fragment_source_islandHeightMapSurface, "HEIGHTMAP SURFACE");
+            matrice_projection_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "matrice_projection");
+            matrice_vue_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "matrice_vue");
+            matrice_objet_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "matrice_objet");
+
+            scaleUV_islandHeightMapSurface=GL.getUniformLocation(shader_program_islandHeightMapSurface, "scaleUV");
+            scale_islandHeightMapSurface=GL.getUniformLocation(shader_program_islandHeightMapSurface, "scale");
+            centre_islandHeightMapSurface=GL.getUniformLocation(shader_program_islandHeightMapSurface, "centre");
+            sampler_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "sampler");
+            samplerNormals_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "samplerNormals");
+            samplerHeightMap_islandHeightMapSurface =  GL.getUniformLocation(shader_program_islandHeightMapSurface, "samplerHeightMap");
+	    hMax_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "hMax");
+	    
+            position_islandHeightMapSurface = GL.getAttribLocation(shader_program_islandHeightMapSurface, "position");
             
             
             //HEIGHTMAP RENDERING
@@ -264,9 +306,10 @@ var Shaders=(function (){
         set_heightMapSurface_shaders: function() {
             GL.useProgram(shader_program_heightMapSurface);
             GL.enableVertexAttribArray(position_heightMapSurface);
-            GL.uniform1i(sampler_heightMapSurface, 0);
-            GL.uniform1i(samplerHeightMap_heightMapSurface, 1);
-            GL.uniform1i(samplerNormals_heightMapSurface, 2);
+            GL.uniform1i(sampler_heightMapSurface, 0),
+            GL.uniform1i(samplerHeightMap_heightMapSurface, 1),
+            GL.uniform1i(samplerNormals_heightMapSurface, 2),
+            GL.uniform1i(sampler_islandHeightMap, 3);
         },
         unset_heightMapSurface_shaders: function() {
             GL.disableVertexAttribArray(position_heightMapSurface);
@@ -293,6 +336,47 @@ var Shaders=(function (){
         set_scaleUV_heightMapSurface: function(scaleU, scaleV){
             GL.uniform2f(scaleUV_heightMapSurface, scaleU, scaleV);
         },
+        set_island_heightMapSurface: function(hMax, scale, offset){
+            GL.uniform1f(hMaxIsland_heightMapSurface, hMax);
+            GL.uniform2fv(scaleIsland_heightMapSurface, scale);
+            GL.uniform2fv(offsetIsland_heightMapSurface, offset);
+        },
+
+
+        //ISLAND HEIGHTMAPSURFACE RENDERING
+        set_islandHeightMapSurface_shaders: function() {
+            GL.useProgram(shader_program_islandHeightMapSurface);
+            GL.enableVertexAttribArray(position_islandHeightMapSurface);
+            GL.uniform1i(sampler_islandHeightMapSurface, 0);
+            GL.uniform1i(samplerHeightMap_islandHeightMapSurface, 1);
+            GL.uniform1i(samplerNormals_islandHeightMapSurface, 2);
+        },
+        unset_islandHeightMapSurface_shaders: function() {
+            GL.disableVertexAttribArray(position_islandHeightMapSurface);
+        },
+        set_vertexPointers_islandHeightMapSurface: function() {
+            GL.vertexAttribPointer(position_islandHeightMapSurface, 2, GL.FLOAT, false,8,0) ;
+        },
+        set_matriceObjet_islandHeightMapSurface: function(matrice) {
+            GL.uniformMatrix4fv(matrice_objet_islandHeightMapSurface, false, matrice);
+        },
+        set_matriceProjection_islandHeightMapSurface: function(matrice) {
+            GL.uniformMatrix4fv(matrice_projection_islandHeightMapSurface, false, matrice);
+        },
+        set_matriceVue_islandHeightMapSurface: function(matrice) {
+            GL.uniformMatrix4fv(matrice_vue_islandHeightMapSurface, false, matrice);
+        },        
+        set_hMax_islandHeightMapSurface: function(hMax){
+            GL.uniform1f(hMax_islandHeightMapSurface, hMax);
+        },
+        set_dim_islandHeightMapSurface: function(scale, centre){
+            GL.uniform2fv(scale_islandHeightMapSurface, scale);
+            GL.uniform2fv(centre_islandHeightMapSurface,centre);
+        },
+        set_scaleUV_islandHeightMapSurface: function(scaleU, scaleV){
+            GL.uniform2f(scaleUV_islandHeightMapSurface, scaleU, scaleV);
+        },
+
 
 
         //HEIGHTMAP TO NORMAL MAP RENDERING

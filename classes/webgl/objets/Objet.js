@@ -11,13 +11,17 @@ var Objet=(function() {
             var matrix=lib_matrix4.copyNew(spec.matrix);
             var that={
                 drawAsHeightMapSurface: function() {
-                    SHADERS.set_matriceObjet_heightMapSurface(matrix);
+                    Shaders.set_matriceObjet_heightMapSurface(matrix);
                     spec.maillage.drawAsHeightMapSurface();
+                },
+                drawAsIslandHeightMapSurface: function() {
+                    Shaders.set_matriceObjet_islandHeightMapSurface(matrix);
+                    spec.maillage.drawAsIslandHeightMapSurface();
                 },
             
                 draw: function() {
                     if (texture) texture.draw();
-                    SHADERS.set_matriceObjet(matrix);
+                    Shaders.set_matriceObjet(matrix);
                     spec.maillage.draw();
                 },
                 rotateX: function(dTheta) {

@@ -7,22 +7,22 @@
  * spec.AABB : bounding box
  */
 var Heightmap=(function() {
+    var debug={
+        heightMap: SETTINGS.debug.LsystemHeightMap,
+        normalMap: SETTINGS.debug.LsystemNormalMap
+    };
+            
     return {
         instance: function(spec){
-            spec.size=spec.size || 1024;
+            spec.size=spec.size || 1024,
             spec.margin=spec.margin || 1;
             
-            var _gl=spec.gl
-            var nGauss=16;
-            var nUV=10;
-            var scaleNode=25; //patch size
-            var patchAlphaRandom=0.2,
-                patchAlphaMin=0.1;
-
-            var debug={
-                heightMap: false,
-                normalMap: false
-            }
+            var _gl=spec.gl;
+            var nGauss=SETTINGS.Lsystems.heightMapGaussPatchSizePx;
+            var nUV=spec.nUV || 10; //number of colored texture patch on the heightmap
+            var scaleNode=SETTINGS.Lsystems.heightMapPatchSizePx; //patch size
+            var patchAlphaRandom=SETTINGS.Lsystems.heightMapPatchAlphaRandom,
+                patchAlphaMin=SETTINGS.Lsystems.heightMapPatchAlphaMin;
             
             //create textures
             var heightMapTexture=_gl.createTexture(),
@@ -73,7 +73,7 @@ var Heightmap=(function() {
                 tableau_js: [
                     0,1,2, 0,2,3
                 ]
-            })
+            });
             
             //compute scale factors
             var heightMapWidth=spec.AABB.xMax-spec.AABB.xMin,
@@ -123,7 +123,7 @@ var Heightmap=(function() {
                 var nodeAlpha=patchAlphaMin+Math.random()*patchAlphaRandom;
                 nodeAlpha*=node.scale;
 
-                SHADERS.set_node_heightMap(nodeScale, nodePosition, nodeAlpha);
+                Shaders.set_node_heightMap(nodeScale, nodePosition, nodeAlpha);
                 gaussianPatchVBOIndices.draw_Elements();
             }
             
@@ -131,7 +131,6 @@ var Heightmap=(function() {
             var that={
                 compute: function() {
                     //COMPUTE HEIGHTMAP
-                    Shaders.unset_defaultShader();
                     Shaders.set_heightMap_shaders();
                    
                     if (!debug.heightMap) _gl.bindFramebuffer(_gl.FRAMEBUFFER, heightMapFBO);
@@ -180,7 +179,7 @@ var Heightmap=(function() {
                     _gl.bindTexture(_gl.TEXTURE_2D, null);
 
 
-                    Shaders.set_defaultShader();
+                   
 
                   //  _gl.clearColor(1.,1.,1.,1.);
                 },
@@ -196,7 +195,7 @@ var Heightmap=(function() {
                     //draw heightmap to get it with readpixel
                     var _pixelsBuffer=new Uint8Array(spec.size*spec.size*4);
 
-                    Shaders.unset_defaultShader();
+                    
                      _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
 
                      Shaders.set_textureRead_shaders();
@@ -213,7 +212,7 @@ var Heightmap=(function() {
                      _gl.readPixels(0,0,spec.size, spec.size, _gl.RGBA, _gl.UNSIGNED_BYTE, _pixelsBuffer);
 
                      Shaders.unset_textureRead_shaders();
-                     Shaders.set_defaultShader();
+                    
                      _gl.enable(_gl.DEPTH_TEST);
 
                      //move nodes
@@ -234,6 +233,7 @@ var Heightmap=(function() {
                      
                      spec.nodes.map(moveNode);
                      spec.AABB.zMax+=spec.hMax;
+                     _gl.clearColor(1.,1.,1.,1.);
                 }
                 
             }

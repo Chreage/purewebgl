@@ -11,8 +11,8 @@ vec3 getPoint(float x, float y, vec2 uv, float dPx, float dPy){
 }
 
 void main(void) {
-    float dPx=1./wh.x;
-    float dPy=1./wh.y;
+    float dPx=1./(wh.x*2.);
+    float dPy=1./(wh.y*2.);
     vec2 uv=fragPos+vec2(.5, .5);
     vec4 color=texture2D(sampler, uv);
 

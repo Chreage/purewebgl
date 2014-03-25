@@ -24,6 +24,9 @@
         stripShader("classes/webgl/shaders/heightMap/shader_fragment_heightMapSurface.gl"),
         stripShader("classes/webgl/shaders/heightMap/shader_vertex_heightMapSurface.gl"),
         
+        stripShader("classes/webgl/shaders/island/shader_fragment_islandHeightMapSurface.gl"),
+        stripShader("classes/webgl/shaders/island/shader_vertex_islandHeightMapSurface.gl"),
+        
         stripShader("classes/webgl/shaders/heightMap/shader_fragment_heightMap.gl"),
         stripShader("classes/webgl/shaders/heightMap/shader_vertex_heightMap.gl"),
         
@@ -44,6 +47,9 @@
         "\$SHADER_FRAGMENT_HEIGHTMAPSURFACE\$",
         "\$SHADER_VERTEX_HEIGHTMAPSURFACE\$",
         
+        "\$SHADER_FRAGMENT_ISLANDHEIGHTMAPSURFACE\$",
+        "\$SHADER_VERTEX_ISLANDHEIGHTMAPSURFACE\$",
+        
         "\$SHADER_FRAGMENT_HEIGHTMAP\$",
         "\$SHADER_VERTEX_HEIGHTMAP\$",
         
@@ -52,8 +58,6 @@
     );
 
     $shaders=file_get_contents("classes/webgl/Shaders.js");
-
     $shaders=str_replace($search, $replace, $shaders);
     
     echo $shaders;
-?>

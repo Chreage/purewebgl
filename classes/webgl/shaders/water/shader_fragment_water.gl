@@ -16,4 +16,5 @@ void main(void) {
     couleur.a=mix(0.8, 1., Kr);
 
     gl_FragColor = vec4(mix(vec3(0.,0.,0.), couleur.rgb*Il, couleur.a), 1.);
+
 }

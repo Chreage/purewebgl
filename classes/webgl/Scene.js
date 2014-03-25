@@ -5,7 +5,8 @@ var SCENE;
 var Scene=(function () {
     return {
         instance: function(spec) {
-            var objets=[], lsystems=[], navigation=false, running=false, cursor="auto", water=false;
+            var objets=[], lsystems=[], islands=[],
+                navigation=false, stop=false, running=false, cursor="auto", water=false;
             var currentLsystemIndex=0;
 
             var drawObjet=function(objet) {
@@ -30,23 +31,34 @@ var Scene=(function () {
                        that.draw();
                    },
                    
+                   pause: function() {
+                       running=false;
+                   },
+                   
                    stop: function(){
+                       stop=true;
                        running=false;
                    },
                    
                    draw: function(timestamp) {
-                       if (!running) return;
+                       if (!running || stop) return;
                        NNODESDISPLAYED=0;
                        
+                       Shaders.set_defaultShader();
                        GL.viewport(0.0, 0.0, CV.width, CV.height);
                        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
                        VUE.draw();
 
                        objets.map(drawObjet);
                        
+                       Shaders.unset_defaultShader();
+                       
                        GL.enable(GL.BLEND);
                        GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+                       
                        lsystems.map(drawObjet);
+                       islands.map(drawObjet);
+                       
                        GL.disable(GL.BLEND);
                         
                        
@@ -81,6 +93,10 @@ var Scene=(function () {
                    add_Lsystem: function(ls){
                        lsystems.push(ls);
                    },
+                   
+                   add_island: function(island){
+                       islands.push(island);
+                   },
 
                    set_navigation: function(nav){
                        navigation=nav;
@@ -92,7 +108,7 @@ var Scene=(function () {
 
                    pick: function(camera, u, Xp, Yp){
                        var lsystempicked=false, dpick=1e10;
-                       lsystems.map(function(lsystem) {
+                       LSYSTEMS.map(function(lsystem) {
                            var pick=lsystem.pick(camera, u);
                            if (!pick) return;
                            if (pick.d<dpick){

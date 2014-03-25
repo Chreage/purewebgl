@@ -45,6 +45,10 @@ var Vue=(function() {
                     Shaders.set_matriceVue_heightMapSurface(matrice_vue);
                     Shaders.set_matriceProjection_heightMapSurface(matrice_projection);
                 },
+                drawIslandHeightMapSurface: function() {
+                    Shaders.set_matriceVue_islandHeightMapSurface(matrice_vue);
+                    Shaders.set_matriceProjection_islandHeightMapSurface(matrice_projection);
+                },
                 draw_water: function() {
                     Shaders.set_matrices_water(matrice_projection, matrice_vue);
                     Shaders.set_camera_water(spec.camera);

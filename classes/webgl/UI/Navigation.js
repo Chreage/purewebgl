@@ -10,8 +10,8 @@ var Navigation=(function () {
                 sensibilite_touche=SETTINGS.navigation.keyboard_sensibility,
                 sensibilite_wheel=SETTINGS.navigation.wheel_sensibility,
                 amortissement_coeff=SETTINGS.navigation.mouse_amortization,
-                theta=0,
-                phi=0,                
+                theta=SETTINGS.camera.theta0,
+                phi=SETTINGS.camera.phi0,
                 dX=0,
                 dY=0;
 
@@ -23,7 +23,6 @@ var Navigation=(function () {
                 window.addEventListener(type, handler, false);
                 eventHandlers.push({type: type, handler: handler});
             }
-
 
 
             //MOUSE EVENTS

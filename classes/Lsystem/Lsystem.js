@@ -198,17 +198,32 @@ var Lsystem=(function() {
                    // if (node.alpha<1) node.alpha+=0.01;
                     sphere.drawInstance(node.scale, node.position);
                 }
-            }
+            };
             
             var sortNode=function(nodeA, nodeB){
                 return nodeB.weight-nodeA.weight;
-            }
+            };
 
             var that={
+                get_sizeX: function() {
+                    return AABB.xMax-AABB.xMin;
+                },
+                get_sizeY: function() {
+                    return AABB.yMax-AABB.yMin;
+                },
+                get_sizeZ: function() {
+                    return AABB.zMax-AABB.zMin;
+                },
                 draw: function() {
+                    //heightMapSurface shader is already in use
+                    //draw heightMap
                     heightmapSurface.drawSurface();
+                    
+                    //draw Spheres
+                    Shaders.set_defaultShader();
                     sphere.drawResources();
                     defaultTextureBinded=false;
+                    
                     
                     alpha=-1;
                     for (var i=0; i<nodes.length; i++){
@@ -220,7 +235,8 @@ var Lsystem=(function() {
                         }
                         drawNode(nodes[i]);
                     }
-                    //heightmapSurface.drawSurface();
+                    Shaders.unset_defaultShader();
+                    
                 },
 
                 pick: function(camera, u) {
@@ -251,8 +267,8 @@ var Lsystem=(function() {
                 }
 
 
-            }//end that
+            };//end that
             return that;
          } //end instance func
-     } //end return
+     }; //end return
 })();

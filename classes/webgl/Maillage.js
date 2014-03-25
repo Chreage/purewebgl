@@ -15,6 +15,11 @@ var Maillage=(function () {
                     vbo_indices.draw();
                 },
                 
+                drawAsIslandHeightMapSurface: function() {
+                    vbo.drawAsIslandHeightMapSurface();
+                    vbo_indices.draw();
+                },
+                
                 draw: function() {
                     vbo.draw();
                     vbo_indices.draw();

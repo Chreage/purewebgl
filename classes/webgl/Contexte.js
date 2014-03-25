@@ -35,7 +35,10 @@ var Contexte=(function() {
             var shaders=Shaders.instance({});
             Shaders.set_defaultShader();
             
-            var vue=Vue.instance({camera: [0,0,-50], theta: 0, phi: 0, angle: 45, zMin: 2, zMax: 300});
+            var vue=Vue.instance({camera: SETTINGS.camera.position0,
+                                  angle: SETTINGS.camera.viewAngle,
+                                  zMin: SETTINGS.camera.zNear,
+                                  zMax: SETTINGS.camera.zFar});
             vue.plein_ecran();
 
             var nav=Navigation.instance({vue: vue});
@@ -52,12 +55,24 @@ var Contexte=(function() {
             lib_ajax.get("php/alexa/alexa.json", function(data){
                 var dataObj=JSON.parse(data);
                 var alexa=dataObj.alexa;
+                
+                var specs=[];
                 for (var i=0; i<N; i++){
-                    var lsystem=Lsystem.instance({nGenerations: n, centre: [R*Math.cos(dAngle*i),R*Math.sin(dAngle*i),0], list: alexa, offset: i, gap: N});
-                    LSYSTEMS.push(lsystem);
-                    scene.add_Lsystem(lsystem);
+                    specs.push({nGenerations: n, list: alexa, offset: i, gap: N});
+                    //var lsystem=Lsystem.instance({nGenerations: n, centre: [R*Math.cos(dAngle*i),R*Math.sin(dAngle*i),0], list: alexa, offset: i, gap: N});
+                    //LSYSTEMS.push(lsystem);
+                    //scene.add_Lsystem(lsystem);
                 }
-                console.log("Done !");
+                
+                var myIsland=SuperIsland.instance({
+                    Lsystems: specs,
+                    centre: [0,0,0],
+                    LsystemRadius: 10,
+                    size: 70
+                });
+                
+                scene.add_island(myIsland);
+                
                 scene.start();
                 var timer_physics=setInterval(SCENE.drawPhysics, SETTINGS.physics.dt);
 
@@ -93,7 +108,7 @@ var Contexte=(function() {
                URLfond: SETTINGS.water.ground
             });
 
-            scene.set_water(eau);
+           // scene.set_water(eau);
                         
             return true;
         }
