@@ -1,13 +1,13 @@
 precision mediump float;
 
-uniform vec3 lightDir;
+uniform vec3 lightDir, fogColor;
 uniform sampler2D sampler, samplerNormals;
 
+varying float vFog;
 varying vec2 vUV;
 varying vec3 vNormal;
 
 const vec3 Z=vec3(0.,0.,1.);
-
 
 //normal mapping : retourne la matrice de rotation d'axe u et d'angle theta
 mat3 rot_angleAxe(float theta, vec3 u) {
@@ -29,17 +29,15 @@ mat3 rot_vectVect(vec3 u,vec3 v) {
 
 
 void main(void) {
-    
     vec4 color=texture2D(sampler, vUV);
     vec4 texture_normale=texture2D(samplerNormals, vUV);
     vec3 n=vec3(2.*(texture_normale.x-0.5), 2.*(texture_normale.y-0.5), texture_normale.z);
-    mat3 rot=rot_vectVect(Z, normalize(vNormal));
+    mat3 rot=rot_vectVect(Z, vNormal);
     vec3 bump_normal=rot*n;
 
     //light intensity
     //float I=dot(bump_normal,lightDir);
     float I=dot(vNormal,lightDir);
 
-   // color.rgb=vec3(.4,.4,.4);
-    gl_FragColor =  vec4(color.rgb*I, 1.);
+    gl_FragColor =  vec4(mix(fogColor, color.rgb*I, vFog), 1.);
 }

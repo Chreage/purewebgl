@@ -31,7 +31,9 @@ readfile('classes/Lsystem/HeightmapSurface.js');
 readfile('classes/Lsystem/Lsystem.js');
 readfile('classes/Lsystem/SuperIsland.js');
 
-
 readfile('classes/water/SurfaceLiquide.js');
+
+readfile('classes/LOD/LodGrids.js');
+readfile('classes/LOD/LodSpheres.js');
 
 readfile('main.js');

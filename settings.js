@@ -33,7 +33,8 @@ var SETTINGS={
     
     //show only nearest spheres
     culling: {
-        NSpheres : 700,    //number of sphere to display on a simple rendering
+        NSpheres : 500,    //total number of sphere to display on a simple rendering
+        NSpheresTextured: 500, //number of textured spheres
         weightAlphaTol: 20, //spheres between weightmin and this weight are semi-transp
         weightGCTol: 100,   //sphere with weight < weightmin-this value are unloaded
         weightNodeIncrease: 1.1, //used in Scene class in render loop to adjust weightmin. higher value -> reactivity but may be unstable
@@ -52,13 +53,13 @@ var SETTINGS={
         
         heightmapSizePx: 512,                 //heightmap size in pixels. must be POT
         heightmapMargin: 2,                   //heightmap margin in world units
-        hMax: 5,                              //max height of the Lsystem, excluding island height
+        hMax: 4,                              //max height of the Lsystem, excluding island height
         heightMapGaussPatchSizePx: 16,        //size of a gauss patch in pixels. Must be POT
         heightMapPatchSizePx: 40,             //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
         heightMapPatchAlphaMin: 0.05,         //min alpha of a gauss patch. Must be between 0 (fully transparent) and 1 (opaque)
         heightMapPatchAlphaRandom: 0.05,      //random part of the gauss patch transparency.
         
-        defaultTextureImageURL: "images/tux.jpg",  //when there is no favicon, use this. must be POT
+        defaultTextureImageURL: "images/textures/pixelBlack.jpg",  //when there is no favicon, use this. must be POT
         textureColorURL:"images/textures/white.jpg", //for heightmap surface - must be POT
         textureNormalsURL :"images/textures/white_normal.jpg" //normal texture for previous texture. must match previous texture
     },
@@ -66,19 +67,25 @@ var SETTINGS={
     //super island settings
     islands : {
         sizePx: 1024,                               //size in pixels of the heightmap of the island. must be POT
-        hMax: 20,                                   //max height of the island
-        nPatch: 80,                                 //number of gaussian patch applied to build the heightmap
-        patchSizeAvgPx: 500,                        //average size of a patch in pixels
-        patchSizeRandomPx: 300,
+        hMax: 8,                                   //max height of the island
+        nPatch: 100,                                 //number of gaussian patch applied to build the heightmap
+        patchSizeAvgPx: 200,                        //average size of a patch in pixels
+        patchSizeRandomPx: 180,
         patchGaussSizePx: 512,                      //size of a gaussian patch texture in pixel. must be POT
-        textureColorURL:"images/textures/red.jpg", //for heightmap surface - must be POT
+        patchAlphaAvg: 0.07,                        //average transparency of a patch. 0->fully transparent, 1-> fully opaque
+        patchAlphaRandom: 0.04,
+        textureColorURL:"images/textures/white.jpg", //for heightmap surface - must be POT
         textureNormalsURL :"images/textures/white_normal.jpg" //normal texture for previous texture. must match previous texture
     },
     
     sphere: {
         zOffset: 0.1,     //vertical offset of a sphere, to avoid collision with the ground
-        nBands: 24,       //number of bands in a sphere mesh
-        nCrowns: 24       //number of crowns in a sphere mesh
+        nBands: 24,       //number of bands in a sphere mesh for LOD 0
+        nCrowns: 24,      //number of crowns in a sphere mesh for LOD 0
+        nLods: 4,          //number of LOD levels
+        changeLodDWeight: 10,
+        lodMinWeight: -200,
+        lodMaxWeight: -50
     },
     
     //water surface settings
@@ -97,7 +104,14 @@ var SETTINGS={
     },
     
     light: {
-        direction: [0,0,1]  // [0,0,1] -> vertical light
+        //direction: [0*0.1,2*0.5,0.5*1]  // [0,0,1] -> vertical light
+        direction: [0,0.5,0.7]  // [0,0,1] -> vertical light
+    },
+    
+    fog: {
+        dMin: 70,               //fog start distance
+        dMax: 150,              //fog stop distance
+        color: [0,0,0.2]        //fog RGB color
     }
     
 };

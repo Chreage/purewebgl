@@ -44,8 +44,8 @@ var SuperIsland=(function() {
             spec.patchSizeAvgPx=spec.patchSizeAvgPx || SETTINGS.islands.patchSizeAvgPx,
             spec.patchSizeRandomPx=spec.patchSizeRandomPx || SETTINGS.islands.patchSizeRandomPx,
             
-            spec.patchAlphaAvg=spec.patchAlphaAvg || 0.1,
-            spec.patchAlphaRandom=spec.patchAlphaRandom || 0.05,
+            spec.patchAlphaAvg=spec.patchAlphaAvg || SETTINGS.islands.patchAlphaAvg,
+            spec.patchAlphaRandom=spec.patchAlphaRandom || SETTINGS.islands.patchAlphaRandom,
 
             spec.hMax = spec.hMax || SETTINGS.islands.hMax,
             spec.nPatch = spec.nPatch || SETTINGS.islands.nPatch,
@@ -105,13 +105,13 @@ var SuperIsland=(function() {
                 
                 //compute heightmap matching coefficients
                 scaleIsland.push([
-                    lsystem.get_sizeX()/spec.size,
-                    lsystem.get_sizeY()/spec.size
+                    (lsystem.get_sizeX())/spec.size,
+                    (lsystem.get_sizeY())/spec.size
                 ]);
                 
                 //center coordinates between 0 and 1
-                xNorm=(x-lsystem.get_sizeX()/2)/spec.size,
-                yNorm=(y-lsystem.get_sizeY()/2)/spec.size;
+                xNorm=(x-0*lsystem.get_sizeX()/2)/spec.size,
+                yNorm=(y-0*lsystem.get_sizeY()/2)/spec.size;
                 
                 offsetIsland.push([
                     xNorm, yNorm
@@ -184,6 +184,9 @@ var SuperIsland=(function() {
             var drawLsystem=function(lsystem, index){
                 Shaders.set_heightMapSurface_shaders();
                 Shaders.set_island_heightMapSurface(spec.hMax, scaleIsland[index], offsetIsland[index]);
+                if (index===0) {
+                    Shaders.set_fog_heightMapSurface(SETTINGS.fog.dMin, SETTINGS.fog.dMax, SETTINGS.fog.color );
+                }
                 lsystem.draw();
             }
             
@@ -215,13 +218,15 @@ var SuperIsland=(function() {
                     var x,y,i, lsi, lsj, k, patchScale, patchPosition=[0,0], patchAlpha;
                     
                     for (i=0; i<spec.nPatch; i++){
-                        k=Math.random();
+                        
+                        //choose 2 random lsystem with index lsi and lsj
                         lsi=Math.floor(Math.random()*spec.Lsystems.length);
                         lsj=lsi;
                         while(lsj===lsi)
                             lsj=Math.floor(Math.random()*spec.Lsystems.length);
                         
-                        //position between 0 and spec.sizePx
+                        //take a random position between the 2 lsystems
+                        k=Math.random();
                         x=k*centers[lsi][0]+(1-k)*centers[lsj][0],
                         y=k*centers[lsi][1]+(1-k)*centers[lsj][1];
                      
@@ -229,6 +234,7 @@ var SuperIsland=(function() {
                         patchPosition[0]=(2*x/spec.size)-1,
                         patchPosition[1]=(2*y/spec.size)-1;
                                 
+                        //scale and transparency of the gaussian bump
                         patchScale=(spec.patchSizeAvgPx+ Math.random()*spec.patchSizeRandomPx)/spec.sizePx;
                         patchAlpha=spec.patchAlphaAvg+ Math.random()*spec.patchAlphaRandom;
                         
@@ -276,6 +282,7 @@ var SuperIsland=(function() {
                 //draw in the render loop
                 draw: function(){
                      Shaders.set_islandHeightMapSurface_shaders();
+                     Shaders.set_fog_islandHeightMapSurface(SETTINGS.fog.dMin, SETTINGS.fog.dMax, SETTINGS.fog.color)
                      VUE.drawIslandHeightMapSurface();
                 
                      Shaders.set_hMax_islandHeightMapSurface(spec.hMax);

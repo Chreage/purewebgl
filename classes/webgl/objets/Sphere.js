@@ -22,16 +22,14 @@ var Sphere=(function() {
                     vertices.push(centre[0]+Math.cos(theta)*Math.cos(phi)*rayon, //X
                                   centre[1]+Math.sin(theta)*Math.cos(phi)*rayon, //Y
                                   centre[2]+Math.sin(phi)*rayon                 //Z
-                                 // theta/(2*Math.PI),                             //U
-                                 // (phi+Math.PI/2)/Math.PI                        //V
                                   );
                     
-                    if (c!=0 ) {
-                        if (c!=couronnes) indices.push(c*(bandes+1)+b, c*(bandes+1)+b-1, (c-1)*(bandes+1)+b);
-                        if (c!=1) indices.push(c*(bandes+1)+b-1, (c-1)*(bandes+1)+b, (c-1)*(bandes+1)+b-1);
+                    if (c!==0 ) {
+                        if (c!==couronnes) indices.push(c*(bandes+1)+b, c*(bandes+1)+b-1, (c-1)*(bandes+1)+b);
+                        if (c!==1) indices.push(c*(bandes+1)+b-1, (c-1)*(bandes+1)+b, (c-1)*(bandes+1)+b-1);
                     }
                 }
-                if (c==0 || c==couronnes) continue; //premiere ou derniere couronne
+                if (c===0 || c===couronnes) continue; //premiere ou derniere couronne
 
             }
             return Objet.instance({
@@ -41,6 +39,6 @@ var Sphere=(function() {
                     indices: indices
             })});
         }
-    }
+    };
 })();
 

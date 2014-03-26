@@ -46,15 +46,14 @@ var Objet=(function() {
 
                 drawResources: function() {
                     if (texture) texture.draw();
-                    SHADERS.set_matriceObjet(matrix);
+                    Shaders.set_matriceObjet(matrix);
                     spec.maillage.drawVBO();
                     spec.maillage.bindVBOIndices();
                     
                 },
 
-                drawInstance: function(scale, position) {
-                    SHADERS.set_scale(scale);
-                    SHADERS.set_position(position);
+                drawInstance: function(position) {
+                    Shaders.set_position(position);
                     spec.maillage.drawVBOIndices_opt();
                 }
             };

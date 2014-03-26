@@ -34,23 +34,14 @@ var Lsystem=(function() {
                 texture: false,
                 weight: 0,
                 alpha: 1
-            }
+            };
 	}
 
      return {
          instance: function(spec){
             var nodes=[];
-            
-            var sphere=Sphere.instance({
-                centre: [0,0,0],
-                rayon: 1,
-                bandes: SETTINGS.sphere.nBands,
-                couronnes: SETTINGS.sphere.nCrowns
-            });
-
             var maxGeneration	= spec.nGenerations || 10;
             var curs=spec.offset; //cursor in the label list
-
 
             //bounding box - used to compute octree
             var AABB={
@@ -123,24 +114,6 @@ var Lsystem=(function() {
 
             //compute octree
             var octree=false;
-
-            //create default texture image
-            var defaultTexture=GL.createTexture(),
-                defaultTextureLoaded=false;
-        
-            var defaultTextureImage=new Image();
-            defaultTextureImage.onload=function(event){
-                GL.bindTexture(GL.TEXTURE_2D, defaultTexture);
-                GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, defaultTextureImage);
-                GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
-                GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR_MIPMAP_LINEAR);
-                GL.generateMipmap(GL.TEXTURE_2D);
-                GL.bindTexture(GL.TEXTURE_2D, null);
-                defaultTextureLoaded=true;
-            }
-            defaultTextureImage.src=spec.defaultImage || SETTINGS.Lsystems.defaultTextureImageURL;
-            
-            
             
             var defaultTextureBinded=false;
             var alpha=-1;
@@ -180,8 +153,8 @@ var Lsystem=(function() {
                 if (node.textureLoaded) {
                      GL.bindTexture(GL.TEXTURE_2D, node.texture);
                      defaultTextureBinded=false;
-                } else if (!defaultTextureBinded && defaultTextureLoaded){
-                     GL.bindTexture(GL.TEXTURE_2D, defaultTexture);
+                } else if (!defaultTextureBinded){
+                     GL.bindTexture(GL.TEXTURE_2D, Texture.get_default());
                      defaultTextureBinded=true;
                 }
                
@@ -193,7 +166,7 @@ var Lsystem=(function() {
                         alpha=node.alpha;
                     }
                    // if (node.alpha<1) node.alpha+=0.01;
-                    sphere.drawInstance(node.scale, node.position);
+                    LodSpheres.draw(node);
                 }
             };
             
@@ -235,11 +208,10 @@ var Lsystem=(function() {
                     
                     //draw Spheres
                     Shaders.set_defaultShader();
-                    sphere.drawResources();
+                    LodSpheres.reset();
                     defaultTextureBinded=false;
-                    
-                    
                     alpha=-1;
+                    
                     for (var i=0; i<nodes.length; i++){
                         if (nodes[i].weight<WEIGHTNODEMIN-WEIGHTALPHATOL) break;
                         if (nodes[i].weight<WEIGHTNODEMIN){
@@ -248,7 +220,7 @@ var Lsystem=(function() {
                             nodes[i].alpha=1;
                         }
                         drawNode(nodes[i]);
-                    }
+                    } //end for nodes
                     Shaders.unset_defaultShader();
                     
                 },

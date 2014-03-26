@@ -110,6 +110,9 @@ var Shaders=(function (){
         matrice_objet_heightMapSurface,
         matrice_vue_heightMapSurface,
         matrice_projection_heightMapSurface,
+        fogDmin_heightMapSurface,
+        fogDmax_heightMapSurface,
+        fogColor_heightMapSurface,
         lightDir_heightMapSurface;
     
     //ISLAND HEIGHTMAP SURFACE RENDERING VARS
@@ -128,6 +131,9 @@ var Shaders=(function (){
         matrice_objet_islandHeightMapSurface,
         matrice_vue_islandHeightMapSurface,
         matrice_projection_islandHeightMapSurface,
+        fogDmin_islandHeightMapSurface,
+        fogDmax_islandHeightMapSurface,
+        fogColor_islandHeightMapSurface,
         lightDir_islandHeightMapSurface;
         
     
@@ -207,7 +213,10 @@ var Shaders=(function (){
             offsetIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "offsetIsland");
             scaleIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "scaleIsland");
             lightDir_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "lightDir");
-            
+            fogDmin_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "fogDmin");
+            fogDmax_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "fogDmax");
+            fogColor_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "fogColor");
+        
             position_heightMapSurface = GL.getAttribLocation(shader_program_heightMapSurface, "position");
             
             //ISLAND HEIGHTMAPSURFACE RENDERING
@@ -224,6 +233,10 @@ var Shaders=(function (){
             samplerHeightMap_islandHeightMapSurface =  GL.getUniformLocation(shader_program_islandHeightMapSurface, "samplerHeightMap");
 	    hMax_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "hMax");
 	    lightDir_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "lightDir");
+            fogDmin_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "fogDmin");
+            fogDmax_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "fogDmax");
+            fogColor_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "fogColor");
+            
             
             position_islandHeightMapSurface = GL.getAttribLocation(shader_program_islandHeightMapSurface, "position");
             
@@ -353,6 +366,11 @@ var Shaders=(function (){
             GL.uniform2fv(scaleIsland_heightMapSurface, scale);
             GL.uniform2fv(offsetIsland_heightMapSurface, offset);
         },
+        set_fog_heightMapSurface : function(dMin, dMax, color){
+            GL.uniform1f(fogDmin_heightMapSurface, dMin),
+            GL.uniform1f(fogDmax_heightMapSurface, dMax),
+            GL.uniform3fv(fogColor_heightMapSurface, color);
+        },
 
 
         //ISLAND HEIGHTMAPSURFACE RENDERING
@@ -388,6 +406,11 @@ var Shaders=(function (){
         },
         set_scaleUV_islandHeightMapSurface: function(scaleU, scaleV){
             GL.uniform2f(scaleUV_islandHeightMapSurface, scaleU, scaleV);
+        },
+        set_fog_islandHeightMapSurface : function(dMin, dMax, color){
+            GL.uniform1f(fogDmin_islandHeightMapSurface, dMin),
+            GL.uniform1f(fogDmax_islandHeightMapSurface, dMax),
+            GL.uniform3fv(fogColor_islandHeightMapSurface, color);
         },
 
 

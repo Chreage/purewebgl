@@ -24,6 +24,7 @@ var Contexte=(function() {
 		GL = canvas.getContext("webgl",
                     {antialias: true,
                      premultipliedAlpha: false });
+                //Init WebGL native extensions : 
                  
                 //allow mesh point indexing with 32 bits integers 
                 EXT_UINT = GL.getExtension("OES_element_index_uint") ||
@@ -51,6 +52,9 @@ var Contexte=(function() {
 		alert("Webgl not found") ;
                 return false;
             } ;
+            
+            Texture.init();
+            LodSpheres.init();
             
             var scene=Scene.instance({});
             var shaders=Shaders.instance({});

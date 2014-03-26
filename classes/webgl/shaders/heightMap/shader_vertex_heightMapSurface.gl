@@ -1,10 +1,11 @@
 attribute vec2 position;
 
 uniform mat4 matrice_vue, matrice_projection, matrice_objet;
-uniform float hMax, hMaxIsland;
+uniform float hMax, hMaxIsland,  fogDmin, fogDmax;
 uniform vec2 scale, centre, scaleUV, scaleIsland, offsetIsland;
 uniform sampler2D samplerHeightMap, samplerIsland;
 
+varying float vFog;
 varying vec2 vUV;
 varying vec3 vNormal;
 
@@ -14,10 +15,13 @@ void main(void) {
     vec4 hmColor=texture2D(samplerHeightMap, position);
     pos.z+=hmColor.r*hMax;
 
-    vec4 islandHM=texture2D(samplerIsland, position*scaleIsland+offsetIsland);
+    vec4 islandHM=texture2D(samplerIsland, ((position-vec2(0.5,0.5))*scaleIsland)+offsetIsland);
     pos.z+=islandHM.r*hMaxIsland;
 
-    gl_Position = matrice_projection * matrice_vue * matrice_objet * vec4(pos, 1.0);    
+    vec4 posScene=matrice_vue * matrice_objet * vec4(pos, 1.0);
+    gl_Position = matrice_projection * posScene;    
     vUV = position*scaleUV;
-    vNormal=hmColor.gba+islandHM.bga+vec3(-1.,-1.,0.);
+    //vNormal=hmColor.gba+islandHM.gba+vec3(-1.,-1.,-1.);
+    vNormal=normalize(hmColor.gba+islandHM.gba-vec3(1.,1.,1.));
+    vFog =  1.-smoothstep(fogDmin, fogDmax, length(posScene.xyz));
 }
