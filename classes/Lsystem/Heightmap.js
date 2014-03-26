@@ -27,7 +27,8 @@ var Heightmap=(function() {
             //create textures
             var heightMapTexture=_gl.createTexture(),
                 normalMapTexture=_gl.createTexture(),
-                gaussTexture=Gauss.get_gaussTexture(_gl, nGauss);
+                //get gauss texture as floating point texture
+                gaussTexture=Gauss.get_gaussTexture(_gl, nGauss, true);
             
             //setup heightMapTexture
             _gl.bindTexture(_gl.TEXTURE_2D, heightMapTexture);            
@@ -35,7 +36,7 @@ var Heightmap=(function() {
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
-            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.size, spec.size, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, null);
+            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.size, spec.size, 0, _gl.RGBA, _gl.FLOAT, null);
             _gl.bindTexture(_gl.TEXTURE_2D, null);
 
             //setup render to texture for heightmap
@@ -50,7 +51,7 @@ var Heightmap=(function() {
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
-            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.size, spec.size, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, null);
+            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.size, spec.size, 0, _gl.RGBA, _gl.FLOAT, null);
             _gl.bindTexture(_gl.TEXTURE_2D, null);
 
             //setup render to texture for normalmap
@@ -151,7 +152,7 @@ var Heightmap=(function() {
                     _gl.flush();                    
                     
                     Shaders.unset_heightMap_shaders();                    
-
+                    if (debug.heightMap) return;
 
 
                     //COMPUTE NORMAL MAP
@@ -159,7 +160,7 @@ var Heightmap=(function() {
                     if (debug.normalMap) SCENE.stop();
 
                     Shaders.set_normals_shaders();
-                    Shaders.set_wh(spec.size, spec.size);
+                    Shaders.set_whHSize(spec.size, spec.size, spec.hMax, heightMapWidth, heightMapHeight);
                     _gl.clearColor(0.,0.,0.,0.);
                     _gl.clear(_gl.COLOR_BUFFER_BIT);
 
@@ -192,6 +193,7 @@ var Heightmap=(function() {
                 },
 
                 moveNodesAbove: function() { //used after heightmap computation to move nodes above the heightmap
+                    if (debug.heightMap || debug.normalMap) return;
                     //draw heightmap to get it with readpixel
                     var _pixelsBuffer=new Uint8Array(spec.size*spec.size*4);
 
@@ -216,23 +218,31 @@ var Heightmap=(function() {
                      _gl.enable(_gl.DEPTH_TEST);
 
                      //move nodes
+                     var hMaxAABB=0, hMinAABB=0;
                      var moveNode=function(node){
-                        var x=(spec.margin+node.position[0]-spec.AABB.xMin)/(heightMapWidth+2*spec.margin);
-                        var y=(spec.margin+node.position[1]-spec.AABB.yMin)/(heightMapHeight+2*spec.margin);
+                        //compute x,y on heightmap texture UV (between 0 and 1) of the node on the island heightmap 
+                        var x=(spec.margin+node.position[0]-spec.AABB.xMin)/(heightMapWidth+2*spec.margin),
+                            y=(spec.margin+node.position[1]-spec.AABB.yMin)/(heightMapHeight+2*spec.margin);
 
+                        //transform UV coordinates into pixel coordinates
+                        //TODO : add linear interpolation
                         var xPx=Math.round(x*spec.size),
                             yPx=Math.round(y*spec.size);
 
+                        //get the pixel index on the readpixel data
                         var i=xPx+spec.size*yPx;
 
-                        var h=spec.hMax*(_pixelsBuffer[4*i]/255); //red channel -> z
-
+                        var h=spec.hMax*(_pixelsBuffer[4*i]/255); //red channel -> height
+                        hMaxAABB=Math.max(h, hMaxAABB),
+                        hMinAABB=Math.min(h, hMinAABB);
+                        //move the node
                         node.position[2]+=h;
 
                      }
                      
                      spec.nodes.map(moveNode);
-                     spec.AABB.zMax+=spec.hMax;
+                     spec.AABB.zMax+=hMaxAABB,
+                     spec.AABB.zMin+=hMinAABB;
                      _gl.clearColor(1.,1.,1.,1.);
                 }
                 

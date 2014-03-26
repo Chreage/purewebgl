@@ -14,7 +14,7 @@ var Gauss=(function() {
             var imageData=ctx.createImageData(n,n);
 
             var x,y,i, val, xNorm, yNorm;
-            var a=1; //ecart type
+            var a=1/3; //ecart type
 
             for(x=0; x<n; x++){
                 xNorm=2*(x-xCtr)/(n-1)
@@ -33,16 +33,16 @@ var Gauss=(function() {
             return cv;
         },
 
-        get_gaussTexture: function(gl, n){
+        get_gaussTexture: function(gl, n, floatTexture){
             var cv=that.get_gaussCanvas(n);
             var texture=gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
             gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,gl.RGBA, gl.UNSIGNED_BYTE, cv );
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,gl.RGBA, (floatTexture)?gl.FLOAT:gl.UNSIGNED_BYTE, cv );
             return texture;
         }
 

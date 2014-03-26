@@ -122,10 +122,7 @@ var Lsystem=(function() {
             heightmapSurface.moveNodesAbove();
 
             //compute octree
-            var octree=Octree.instance({
-                AABB: AABB,
-                nodes: nodes
-            });
+            var octree=false;
 
             //create default texture image
             var defaultTexture=GL.createTexture(),
@@ -205,6 +202,7 @@ var Lsystem=(function() {
             };
 
             var that={
+                // GETTERS
                 get_sizeX: function() {
                     return AABB.xMax-AABB.xMin;
                 },
@@ -214,6 +212,22 @@ var Lsystem=(function() {
                 get_sizeZ: function() {
                     return AABB.zMax-AABB.zMin;
                 },
+                get_nodes: function() {
+                    return nodes;
+                },
+                get_AABB: function(){
+                    return AABB;
+                },
+                
+                //COMPUTERS
+                computeOctree: function(){
+                    octree=Octree.instance({
+                        AABB: AABB,
+                        nodes: nodes
+                    });
+                },
+                
+                //DYNAMIC METHODS
                 draw: function() {
                     //heightMapSurface shader is already in use
                     //draw heightMap
@@ -240,6 +254,7 @@ var Lsystem=(function() {
                 },
 
                 pick: function(camera, u) {
+                    if (!octree) return false;
                     var pick=octree.intersect(camera, u);
                     if (pick) pick.lsystem=that;
                     return pick;

@@ -3,14 +3,13 @@ precision mediump float;
 
 attribute vec3 position;
 
-uniform vec3 centre, camera;
+uniform vec3 centre, camera, lightDir;
 uniform float scale, hightLight;
 uniform mat4 matrice_vue, matrice_projection, matrice_objet;
 
 varying float vI;
 varying vec2 vUV;
 
-const vec3 LIGHT=vec3(0.,0.,1.);
 
 void main(void) {
     //compute position
@@ -25,10 +24,9 @@ void main(void) {
     vUV=vec2(0.5,0.5)+5.*(M.xy*0.5);
     
     //compute lighting
-    vI=(0.6+0.5*hightLight);                  //mouseover hightlighting 
-    vI*=0.8+0.3*max(dot(position, LIGHT),0.); //diffuse
-    vI*=(1.+max(0., 2.*pow(dot(reflected, LIGHT), 6.))); //specular
-
+    vI=(0.6+0.5*hightLight);                                //mouseover hightlighting 
+    vI*=0.8+0.3*max(dot(position, lightDir),0.);            //diffuse
+    vI*=(1.+max(0., 2.*pow(dot(reflected, lightDir), 6.))); //specular
     
     gl_Position = matrice_projection * matrice_vue * pos;
 }

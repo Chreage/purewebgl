@@ -6,7 +6,7 @@
  * spec.size : size of the full island (size max)
  * 
  * spec.sizePx : Size of the heightMap in pixels. must be pot
- * spec.patchGaussSizePx: Real size of a patch in pixels. must be pot
+ * spec.patchGaussSizePx: Real size of a patch in pixels. must be POT
  *
  * spec.patchSizeAvgPx : Average Size of a patch in pixels as it will be applied on the heighMap
  * spec.patchSizeRandomPx : Random part of a patch in pixels as it will be applied on the heighMap
@@ -38,17 +38,17 @@ var SuperIsland=(function() {
             spec.LsystemRadius=spec.LsystemRadius||10,
             spec.size=spec.size||100,
             
-            spec.sizePx=spec.sizePx || 1024,
-            spec.patchGaussSizePx=spec.patchGaussSizePx || 256,
+            spec.sizePx=spec.sizePx || SETTINGS.islands.sizePx,
+            spec.patchGaussSizePx=spec.patchGaussSizePx || SETTINGS.islands.patchGaussSizePx,
  
-            spec.patchSizeAvgPx=spec.patchSizeAvgPx || 320,
-            spec.patchSizeRandomPx=spec.patchSizeRandomPx || 200,
+            spec.patchSizeAvgPx=spec.patchSizeAvgPx || SETTINGS.islands.patchSizeAvgPx,
+            spec.patchSizeRandomPx=spec.patchSizeRandomPx || SETTINGS.islands.patchSizeRandomPx,
             
             spec.patchAlphaAvg=spec.patchAlphaAvg || 0.1,
             spec.patchAlphaRandom=spec.patchAlphaRandom || 0.05,
 
-            spec.hMax = spec.hMax || 4,
-            spec.nPatch = spec.nPatch || 80,
+            spec.hMax = spec.hMax || SETTINGS.islands.hMax,
+            spec.nPatch = spec.nPatch || SETTINGS.islands.nPatch,
             
             spec.scaleUV = spec.scaleUV || 10;
             
@@ -119,17 +119,20 @@ var SuperIsland=(function() {
                 
             }); //end Lsystems loop
             
-            //get gauss texture
-            var islandGaussTexture=Gauss.get_gaussTexture(_gl, spec.patchGaussSizePx);
+            if (SETTINGS.debug.LsystemHeightMap || SETTINGS.debug.LsystemNormalMap) return;
+                
+                
+            //get gauss texture as floatTexture
+            var islandGaussTexture=Gauss.get_gaussTexture(_gl, spec.patchGaussSizePx, true);
              
             //create island heightmap texture
             var islandHeightMapTexture=_gl.createTexture();
             _gl.bindTexture(_gl.TEXTURE_2D, islandHeightMapTexture);            
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
-            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.sizePx, spec.sizePx, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, null);
+            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.sizePx, spec.sizePx, 0, _gl.RGBA, _gl.FLOAT, null);
             _gl.bindTexture(_gl.TEXTURE_2D, null);
             
             
@@ -143,11 +146,11 @@ var SuperIsland=(function() {
             //setup normalMapTexture
             var islandNormalMapTexture=_gl.createTexture();
             _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR_MIPMAP_LINEAR);
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
-            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.sizePx, spec.sizePx, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, null);
+            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.sizePx, spec.sizePx, 0, _gl.RGBA, _gl.FLOAT, null);
             _gl.bindTexture(_gl.TEXTURE_2D, null);
 
             //setup render to texture for normalmap
@@ -233,12 +236,14 @@ var SuperIsland=(function() {
                         gaussianPatchVBOIndices.draw_Elements();
                     } //end draw patches loop
                     
+                    _gl.bindTexture(_gl.TEXTURE_2D, null);
                     _gl.flush();                    
                     
                     Shaders.unset_heightMap_shaders();                    
+                    if (debug.islandHeightMap) return;
 
 
-
+                    
                     //COMPUTE ISLAND NORMAL MAP
                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, (debug.islandNormalMap)?null:islandNormalMapFBO);
                     if (debug.islandNormalMap) {
@@ -248,21 +253,20 @@ var SuperIsland=(function() {
                     }
 
                     Shaders.set_normals_shaders();
-                    Shaders.set_wh(spec.sizePx, spec.sizePx);
+                    Shaders.set_whHSize(spec.sizePx, spec.sizePx, spec.hMax, spec.size, spec.size);
                     _gl.clearColor(0.,0.,0.,0.);
                     _gl.clear(_gl.COLOR_BUFFER_BIT);
 
+                    _gl.activeTexture(_gl.TEXTURE0);
                     _gl.bindTexture(_gl.TEXTURE_2D, islandHeightMapTexture);
                     gaussianPatchVBO.draw_normalMap();
                     gaussianPatchVBOIndices.draw();
                     Shaders.unset_normals_shaders();
                     
-
                     _gl.enable(_gl.DEPTH_TEST);
                     _gl.disable(_gl.BLEND);
-
                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
-
+                    
                     //generate mipmaps
                     _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
                     _gl.generateMipmap(_gl.TEXTURE_2D);
@@ -294,12 +298,109 @@ var SuperIsland=(function() {
                     _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
                     
                     lsystems.map(drawLsystem);
-                }
+                },
+                
+                moveNodesAbove: function() { //used after heightmap computation to move nodes above the heightmap
+                    //draw heightmap to get it with readpixel
+                    var _pixelsBuffer=new Uint8Array(spec.sizePx*spec.sizePx*4);
+                    
+                    //read island heightmap pixels
+                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
+
+                     Shaders.set_textureRead_shaders();
+                      _gl.viewport(0.0, 0.0, spec.sizePx, spec.sizePx);
+                     _gl.clearColor(0.,0.,0.,0.);
+                     _gl.clear(_gl.COLOR_BUFFER_BIT);
+                     _gl.disable(_gl.DEPTH_TEST);
+
+                     _gl.bindTexture(_gl.TEXTURE_2D, islandHeightMapTexture);
+                     gaussianPatchVBO.draw_textureRead();
+                     gaussianPatchVBOIndices.draw();
+                     
+                     _gl.flush();                     
+                     _gl.readPixels(0,0,spec.sizePx, spec.sizePx, _gl.RGBA, _gl.UNSIGNED_BYTE, _pixelsBuffer);
+
+                     Shaders.unset_textureRead_shaders();
+                    
+                     _gl.enable(_gl.DEPTH_TEST);
+
+                     //move nodes
+                     var moveLsystem=function(lsystem){
+                        var nodes=lsystem.get_nodes();
+                        var hMaxAABB=0, hMinAABB=0;
+                        
+                        //get the pixel heightmap color from xPx and yPx, between 0 and 255
+                        //xPx and yPx between 0 and spec.sizePx
+                        var getH255=function(xPx,yPx){
+                            //get the pixel index on the readpixel data
+                            var i=xPx+spec.sizePx*yPx;
+                            return _pixelsBuffer[4*i]; //red channel -> height
+                        }
+                        
+                        nodes.map(function(node){ //move node
+                            //compute x,y in texture UV (between 0 and 1)
+                            //of the node on the island heightmap
+                            var x=0.5+(node.position[0]-spec.centre[0])/spec.size,
+                                y=0.5+(node.position[1]-spec.centre[1])/spec.size;
+
+                            //node.position[2]+=spec.hMax; return;
+                            if (x<0 || y<0 || x>1 || y>1) return; //node is out of the island heightmap
+                            
+                           
+                            //transform UV coordinates into pixel coordinates
+                            var xPx=x*spec.sizePx,
+                                yPx=y*spec.sizePx;
+                            
+                            var x1=Math.floor(xPx), y1=Math.floor(yPx),
+                                x2=Math.ceil(xPx),  y2=Math.ceil(yPx);
+                                    
+                            //height between 0 and 255
+                            var h255=((x1-x2)*(y1-y2))?lib_maths.bilinear_interpolation(
+                                    xPx, yPx,
+                                    x1, y1,
+                                    x2, y2,
+                                    getH255(x1,y1),
+                                    getH255(x1,y2),
+                                    getH255(x2,y1),
+                                    getH255(x2,y2)
+                                    ):getH255(x1,y1);
+                            //for debug - h with no interpolation
+                            //var h255 = getH255(Math.round(xPx), Math.round(yPx));
+                            
+                            var h=spec.hMax*h255/255; //height in world coordinates;
+
+                            //move the node, and also apply sphere offset
+                            node.position[2]+=h+SETTINGS.sphere.zOffset;
+                            hMaxAABB=Math.max(h, hMaxAABB),
+                            hMinAABB=Math.min(h, hMinAABB);
+                        
+                        });//end nodes map
+                        
+                        var AABB=lsystem.get_AABB();
+                        
+                        //move the bounding box to be able to compute a nice octree
+                        AABB.zMax+=hMaxAABB+SETTINGS.sphere.zOffset,
+                        AABB.zMin+=hMinAABB+SETTINGS.sphere.zOffset;
+             
+                        lsystem.computeOctree(); 
+                     }; //end Lsystems map
+                     
+                     lsystems.map(moveLsystem);
+                     //spec.nodes.map(moveNode);
+                     //spec.AABB.zMax+=spec.hMax;
+                     //_gl.clearColor(1.,1.,1.,1.);
+                     
+                     
+                     
+                } //end moveNodesAbove
                 
                 
             }; //end that
             
             that.compute();
+            if (!debug.islandHeightMap && !debug.islandNormalMap){
+                that.moveNodesAbove();
+            }
             return that;
             
         }

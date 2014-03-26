@@ -1,11 +1,11 @@
 precision mediump float;
 
+uniform vec3 lightDir;
 uniform sampler2D sampler, samplerNormals;
 
 varying vec2 vUV;
 varying vec3 vNormal;
 
-const vec3 LIGHT=vec3(0.,0.,1.2);
 const vec3 Z=vec3(0.,0.,1.);
 
 
@@ -37,7 +37,8 @@ void main(void) {
     vec3 bump_normal=rot*n;
 
     //light intensity
-    float I=dot(bump_normal,LIGHT);
+    //float I=dot(bump_normal,lightDir);
+    float I=dot(vNormal,lightDir);
 
    // color.rgb=vec3(.4,.4,.4);
     gl_FragColor =  vec4(color.rgb*I, 1.);

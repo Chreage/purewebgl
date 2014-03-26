@@ -2,6 +2,7 @@
  * spec.canvas_id : id of the canvas
  */
 var GL, CV, CURRENTGEN=0, LSYSTEMS=[];
+var EXT_FLOAT, EXT_FLOAT2, EXT_UINT, EXT_FLOAT_LINEAR;
 
 var NNODESDISPLAYEDMAX=SETTINGS.culling.NSpheres;
 var WEIGHTNODEMIN=-165;
@@ -20,12 +21,32 @@ var Contexte=(function() {
             CV=canvas;
             
             try {
-		GL = canvas.getContext("experimental-webgl",
+		GL = canvas.getContext("webgl",
                     {antialias: true,
                      premultipliedAlpha: false });
-                var EXT = GL.getExtension("OES_element_index_uint") ||
-                GL.getExtension("MOZ_OES_element_index_uint") ||
-                GL.getExtension("WEBKIT_OES_element_index_uint");
+                 
+                //allow mesh point indexing with 32 bits integers 
+                EXT_UINT = GL.getExtension("OES_element_index_uint") ||
+                           GL.getExtension("MOZ_OES_element_index_uint") ||
+                           GL.getExtension("WEBKIT_OES_element_index_uint");
+        
+                //allow texture float, useful for heightmaps
+                EXT_FLOAT = GL.getExtension('OES_texture_float') ||
+                            GL.getExtension('MOZ_OES_texture_float') ||
+                            GL.getExtension('WEBKIT_OES_texture_float');
+                
+                EXT_FLOAT2 = GL.getExtension('OES_texture_half_float') ||
+                             GL.getExtension('MOZ_OES_texture_half_float') ||
+                             GL.getExtension('WEBKIT_OES_texture_half_float');
+                     
+                //enable linear filtering on floating point textures     
+                EXT_FLOAT_LINEAR = GL.getExtension('OES_texture_float_linear') ||
+                                   GL.getExtension('MOZ_OES_texture_float_linear') ||
+                                   GL.getExtension('WEBKIT_OES_texture_float_linear');     
+                 
+                if (!EXT_FLOAT || !EXT_FLOAT2 || !EXT_UINT || !EXT_FLOAT_LINEAR){
+                    console.log("Warning : some extension are lacking :(");
+                }
             } catch (e) {
 		alert("Webgl not found") ;
                 return false;
@@ -67,8 +88,8 @@ var Contexte=(function() {
                 var myIsland=SuperIsland.instance({
                     Lsystems: specs,
                     centre: [0,0,0],
-                    LsystemRadius: 10,
-                    size: 70
+                    LsystemRadius: 50,
+                    size: 200
                 });
                 
                 scene.add_island(myIsland);
@@ -103,12 +124,14 @@ var Contexte=(function() {
                 var timerGen=setInterval(showGen, 1000);
             });*/
 
-            var eau=SurfaceLiquide.instance({
-               URLciel: SETTINGS.water.sky,
-               URLfond: SETTINGS.water.ground
-            });
+            if(SETTINGS.water.enable) {
+                var eau=SurfaceLiquide.instance({
+                   URLciel: SETTINGS.water.sky,
+                   URLfond: SETTINGS.water.ground
+                });
 
-           // scene.set_water(eau);
+                scene.set_water(eau);
+            } //end if water enable
                         
             return true;
         }

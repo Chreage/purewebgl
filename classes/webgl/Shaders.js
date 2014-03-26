@@ -73,7 +73,9 @@ var Shaders=(function (){
 
     var position_normals,
         sampler_normals,
-        wh_normals;
+        wh_normals,
+        H_normals,
+        size_normals;
 
 
     //HEIGHTMAP RENDERING VARS
@@ -107,7 +109,8 @@ var Shaders=(function (){
         offsetIsland_heightMapSurface,
         matrice_objet_heightMapSurface,
         matrice_vue_heightMapSurface,
-        matrice_projection_heightMapSurface;
+        matrice_projection_heightMapSurface,
+        lightDir_heightMapSurface;
     
     //ISLAND HEIGHTMAP SURFACE RENDERING VARS
     var shader_vertex_source_islandHeightMapSurface="$SHADER_VERTEX_ISLANDHEIGHTMAPSURFACE$",
@@ -124,7 +127,8 @@ var Shaders=(function (){
         hMax_islandHeightMapSurface,
         matrice_objet_islandHeightMapSurface,
         matrice_vue_islandHeightMapSurface,
-        matrice_projection_islandHeightMapSurface;
+        matrice_projection_islandHeightMapSurface,
+        lightDir_islandHeightMapSurface;
         
     
     //GLASS RENDERING VARS
@@ -139,6 +143,7 @@ var Shaders=(function (){
         scale, centre,hightLight,
         position,
         camera,
+        lightDir,
         sampler,
         alpha;
 
@@ -179,6 +184,8 @@ var Shaders=(function (){
             shader_program_normals=get_shaderProgram(shader_vertex_source_normals, shader_fragment_source_normals, "NORMALS");
             sampler_normals = GL.getUniformLocation(shader_program_normals, "sampler");
             wh_normals = GL.getUniformLocation(shader_program_normals, "wh");
+            H_normals = GL.getUniformLocation(shader_program_normals, "H");
+            size_normals = GL.getUniformLocation(shader_program_normals, "size");
             position_normals = GL.getAttribLocation(shader_program_normals, "position");
 
 
@@ -199,8 +206,9 @@ var Shaders=(function (){
 	    hMaxIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "hMaxIsland");
             offsetIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "offsetIsland");
             scaleIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "scaleIsland");
-            position_heightMapSurface = GL.getAttribLocation(shader_program_heightMapSurface, "position");
+            lightDir_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "lightDir");
             
+            position_heightMapSurface = GL.getAttribLocation(shader_program_heightMapSurface, "position");
             
             //ISLAND HEIGHTMAPSURFACE RENDERING
             shader_program_islandHeightMapSurface=get_shaderProgram(shader_vertex_source_islandHeightMapSurface, shader_fragment_source_islandHeightMapSurface, "HEIGHTMAP SURFACE");
@@ -215,7 +223,8 @@ var Shaders=(function (){
             samplerNormals_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "samplerNormals");
             samplerHeightMap_islandHeightMapSurface =  GL.getUniformLocation(shader_program_islandHeightMapSurface, "samplerHeightMap");
 	    hMax_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "hMax");
-	    
+	    lightDir_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "lightDir");
+            
             position_islandHeightMapSurface = GL.getAttribLocation(shader_program_islandHeightMapSurface, "position");
             
             
@@ -243,6 +252,7 @@ var Shaders=(function (){
             centre=GL.getUniformLocation(shader_program, "centre");
             hightLight=GL.getUniformLocation(shader_program, "hightLight");
             alpha=GL.getUniformLocation(shader_program, "alpha");
+            lightDir=GL.getUniformLocation(shader_program, "lightDir");
 
             position = GL.getAttribLocation(shader_program, "position");
         },
@@ -276,6 +286,7 @@ var Shaders=(function (){
             GL.useProgram(shader_program);
             GL.enableVertexAttribArray(position);
             GL.uniform1i(sampler, 0);
+            GL.uniform3fv(lightDir, SETTINGS.light.direction);
         },
         unset_defaultShader: function() {
             GL.disableVertexAttribArray(position);
@@ -310,6 +321,7 @@ var Shaders=(function (){
             GL.uniform1i(samplerHeightMap_heightMapSurface, 1),
             GL.uniform1i(samplerNormals_heightMapSurface, 2),
             GL.uniform1i(sampler_islandHeightMap, 3);
+            GL.uniform3fv(lightDir_heightMapSurface, SETTINGS.light.direction);
         },
         unset_heightMapSurface_shaders: function() {
             GL.disableVertexAttribArray(position_heightMapSurface);
@@ -350,6 +362,7 @@ var Shaders=(function (){
             GL.uniform1i(sampler_islandHeightMapSurface, 0);
             GL.uniform1i(samplerHeightMap_islandHeightMapSurface, 1);
             GL.uniform1i(samplerNormals_islandHeightMapSurface, 2);
+            GL.uniform3fv(lightDir_islandHeightMapSurface, SETTINGS.light.direction);
         },
         unset_islandHeightMapSurface_shaders: function() {
             GL.disableVertexAttribArray(position_islandHeightMapSurface);
@@ -391,8 +404,10 @@ var Shaders=(function (){
         set_vertexPointers_normals: function() {
             GL.vertexAttribPointer(position_normals, 2, GL.FLOAT, false,8,0) ;
         },
-        set_wh: function(w,h){
+        set_whHSize: function(w,h, H, sx, sy){
             GL.uniform2f(wh_normals,w,h);
+            GL.uniform1f(H_normals, H);
+            GL.uniform2f(size_normals, sx,sy);
         },
 
 

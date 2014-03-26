@@ -16,5 +16,7 @@ void main(void) {
 
     gl_Position = matrice_projection * matrice_vue * matrice_objet * vec4(pos, 1.0);    
     vUV = position*scaleUV;
-    vNormal=hmColor.gba;
+    vNormal=normalize(hmColor.gba-vec3(0.5,0.5,0.));
+
+    //vNormal=vec3(0.,0.,1.);
 }
