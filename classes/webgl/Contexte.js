@@ -4,12 +4,19 @@
 var GL, CV, CURRENTGEN=0, LSYSTEMS=[];
 var EXT_FLOAT, EXT_FLOAT2, EXT_UINT, EXT_FLOAT_LINEAR;
 
-var NNODESDISPLAYEDMAX=SETTINGS.culling.NSpheres;
+var NNODESDISPLAYEDMAX=SETTINGS.culling.NSpheres,
+    NNODESTEXTUREDDISPLAYEDMAX=SETTINGS.culling.NSpheresTextured;
+        
+
 var WEIGHTNODEMIN=-165;
+var WEIGHTNODETEXTUREDMIN=-150;
+
 var WEIGHTALPHATOL=SETTINGS.culling.weightAlphaTol;
 var WEIGHTGCTOL=SETTINGS.culling.weightGCTol;
 var WEIGHTNODEINCREASE=SETTINGS.culling.weightNodeIncrease;
-var NNODESDISPLAYED=0;
+
+var NNODESDISPLAYED=0,
+    NNODESTEXTUREDDISPLAYED=0;
 
 var MAXIMAGEREQS=SETTINGS.culling.maxImageReqs,
     NIMAGEREQS=0;
@@ -23,7 +30,8 @@ var Contexte=(function() {
             try {
 		GL = canvas.getContext("webgl",
                     {antialias: true,
-                     premultipliedAlpha: false });
+                     premultipliedAlpha: true,
+                     alpha: true});
                 //Init WebGL native extensions : 
                  
                 //allow mesh point indexing with 32 bits integers 
@@ -55,6 +63,7 @@ var Contexte=(function() {
             
             Texture.init();
             LodSpheres.init();
+            LodGrids.init();
             
             var scene=Scene.instance({});
             var shaders=Shaders.instance({});
@@ -81,22 +90,29 @@ var Contexte=(function() {
                 var dataObj=JSON.parse(data);
                 var alexa=dataObj.alexa;
                 
-                var specs=[];
+                var specs=[], specs2=[];
                 for (var i=0; i<N; i++){
-                    specs.push({nGenerations: n, list: alexa, offset: i, gap: N});
-                    //var lsystem=Lsystem.instance({nGenerations: n, centre: [R*Math.cos(dAngle*i),R*Math.sin(dAngle*i),0], list: alexa, offset: i, gap: N});
-                    //LSYSTEMS.push(lsystem);
-                    //scene.add_Lsystem(lsystem);
+                    specs.push({nGenerations: n, list: alexa, offset: 2*i, gap: 2*N});
+                    specs2.push({nGenerations: n, list: alexa, offset: 2*i+1, gap: 2*N});
                 }
                 
                 var myIsland=SuperIsland.instance({
                     Lsystems: specs,
-                    centre: [0,0,0],
-                    LsystemRadius: 50,
-                    size: 200
+                    centre: [90,0,0],
+                    LsystemRadius: 25,
+                    size: 160
                 });
                 
                 scene.add_island(myIsland);
+                
+                var myIsland2=SuperIsland.instance({
+                    Lsystems: specs2,
+                    centre: [-90,0,0],
+                    LsystemRadius: 25,
+                    size: 160
+                });
+                
+                scene.add_island(myIsland2);
                 
                 scene.start();
                 var timer_physics=setInterval(SCENE.drawPhysics, SETTINGS.physics.dt);

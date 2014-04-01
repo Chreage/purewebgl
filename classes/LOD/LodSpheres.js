@@ -13,7 +13,7 @@ var LodSpheres=(function() {
             
             Nlods=SETTINGS.sphere.nLods;
             var i, nBands, nCrowns;
-            for (i=1; i<=SETTINGS.sphere.nLods; i++){
+            for (i=1; i<=Nlods; i++){
                 nBands=SETTINGS.sphere.nBands/i,
                 nCrowns=SETTINGS.sphere.nCrowns/i;
                 spheres.push(
@@ -28,7 +28,7 @@ var LodSpheres=(function() {
                     SETTINGS.sphere.lodMinWeight
                     +(SETTINGS.sphere.lodMaxWeight-SETTINGS.sphere.lodMinWeight)/SETTINGS.sphere.nLods
                     *(SETTINGS.sphere.nLods-i+1)
-                )
+                );
             } //end for nLods
             
         }, //end init function

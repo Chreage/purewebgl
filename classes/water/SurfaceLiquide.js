@@ -24,26 +24,34 @@ var SurfaceLiquide=(function() {
             spec.visibilite=spec.visibilite || SETTINGS.water.visibility;
             spec.lumiere=spec.lumiere ||SETTINGS.light.direction; //[0,10,0];
 
-            var matrix=lib_matrix4.get_I4(),
-                matrix_inv=lib_matrix4.get_I4();
+            var matrix=lib_matrix4.get_I4();
 
             lib_matrix_rot4.rotateX(matrix, -Math.PI/2);
             lib_matrix_mv.set_position(matrix, spec.centre);
-            lib_matrix_mv.inv(matrix, matrix_inv);
-
-
+           
 
             //création des indices
             var vertices=[], indices=[], x,z;
+            var nx,nz,signx,signz; //normalized x and y (between -1 and 1) - used for adaptative grid
 
             for (z=0; z<spec.N; z++) {
+                nz=2*(z/spec.N-0.5);
+                signz=(nz>=0)?1:-1;
+                
+                nz=Math.pow(Math.abs(nz), 3)*signz;
+                
                 for (x=0; x<spec.N; x++) {
+                    nx=2*(x/spec.N-0.5);
+                    signx=(nx>=0)?1:-1;
+                
+                    nx=Math.pow(Math.abs(nx), 3)*signx;
+                
                     vertices.push(
-                        spec.d*(x/spec.N-0.5), //x
+                        spec.d*0.5*nx, //x
                         0,                     //y
-                        spec.d*(z/spec.N-0.5)  //z
+                        spec.d*0.5*nz          //z
                     );
-                    if (x!=0 && z!=0) {
+                    if (x && z) {
                         indices.push(spec.N*z+x, spec.N*z+x-1,     spec.N*(z-1)+x-1,
                                      spec.N*z+x, spec.N*(z-1)+x-1, spec.N*(z-1)+x);
                     }
@@ -64,18 +72,19 @@ var SurfaceLiquide=(function() {
             var i,L,k, theta, kvec,c,w, A;
             var dispersion=Math.PI/2;                        //angle de dispersion en radians
             var theta0=Math.random()*2*Math.PI;              //direction des vagues
-            for (i=0; i<8; i++) {                            //on utilise 8 vagues
-                L=spec.lambda/Math.pow(1.4,i);               //longueur d'onde de la houle
+            for (i=0; i<6; i++) {                            //on utilise 8 vagues
+                L=spec.lambda/Math.pow(1.5,i);               //longueur d'onde de la houle
                 k=2*Math.PI/L;                               //norme du vecteur d'onde
-                theta=theta0+(Math.random()-0.5)*dispersion; //orientation de la vague
+                theta=Math.random()*Math.PI*2; //
+               // theta=theta0+(Math.random()-0.5)*dispersion; //orientation de la vague
                 kvec=[Math.cos(theta)*k, Math.sin(theta)*k]; //vecteur d'onde
                 ks.push(kvec[0], kvec[1]);
 
-                c=1.25*Math.sqrt(L);                         //célérité de la vague - relation empirique
+                c=1.65*Math.sqrt(L);                         //célérité de la vague - relation empirique
                 w=c*k;                                       //frequence angulaire
                 ws.push(w);
 
-                A=0.01*L;                                   //amplitude - relation empirique
+                A=0.005*L;                                   //amplitude - relation empirique
                 amplitudes.push(A);                
             }
 
@@ -88,13 +97,18 @@ var SurfaceLiquide=(function() {
             var time=0;
             that.draw=function() {
                 Shaders.set_water_shader();
-                GL.clearColor(1.,1.,1.,1.);
-                GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
-                GL.enable(GL.BLEND);
+                GL.clearColor(SETTINGS.light.skyColor[0],
+                              SETTINGS.light.skyColor[1],
+                              SETTINGS.light.skyColor[2],
+                              SETTINGS.light.skyColor[3]);
+                //GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+                //GL.enable(GL.BLEND);
                 VUE.draw_water();
+                Shaders.set_fog_water(SETTINGS.fog.dMin, SETTINGS.fog.dMax, SETTINGS.fog.color);
 
                 Shaders.set_time_water(time);
-                Shaders.set_matriceObjet_water(matrix, matrix_inv);
+                VUE.copy_cameraXY(matrix);
+                Shaders.set_matriceObjet_water(matrix);
                 Shaders.set_vagues_water(amplitudes, ks, ws);
                 Shaders.set_liquid_water(1/spec.i, spec.profondeur, spec.couleur, spec.visibilite, spec.lumiere);
 
@@ -107,7 +121,7 @@ var SurfaceLiquide=(function() {
 
                 Shaders.unset_water_shader();
                 
-                GL.disable(GL.BLEND);
+               // GL.disable(GL.BLEND);
             };
             
             that.drawPhysics=function() {

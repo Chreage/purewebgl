@@ -50,9 +50,12 @@ var SuperIsland=(function() {
             spec.hMax = spec.hMax || SETTINGS.islands.hMax,
             spec.nPatch = spec.nPatch || SETTINGS.islands.nPatch,
             
-            spec.scaleUV = spec.scaleUV || 10;
+            spec.scaleUV = spec.scaleUV || SETTINGS.islands.textureTileInWidth;
             
     
+            var matrix=lib_matrix4.get_I4();
+            //lib_matrix_mv.set_position(matrix, spec.centre);
+            
             var _gl=GL;
             var lsystems=[];
  
@@ -175,10 +178,10 @@ var SuperIsland=(function() {
             });
             
             //build grid
-            var grid=Grid.instance({
+            /* var grid=Grid.instance({
                 x:512,
                 y:512
-            });
+            });*/
             
             
             var drawLsystem=function(lsystem, index){
@@ -205,7 +208,6 @@ var SuperIsland=(function() {
                     
                     _gl.clearColor(0.,0.,0.,1.);
                     _gl.disable(_gl.DEPTH_TEST);
-                    _gl.enable(_gl.BLEND);
                     _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE);
                     _gl.viewport(0.0, 0.0, spec.sizePx, spec.sizePx);
                     _gl.clear(_gl.COLOR_BUFFER_BIT);
@@ -270,7 +272,7 @@ var SuperIsland=(function() {
                     Shaders.unset_normals_shaders();
                     
                     _gl.enable(_gl.DEPTH_TEST);
-                    _gl.disable(_gl.BLEND);
+                    _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA);
                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
                     
                     //generate mipmaps
@@ -281,6 +283,11 @@ var SuperIsland=(function() {
                 
                 //draw in the render loop
                 draw: function(){
+                     //DISTANCE TEST
+                     var distance=VUE.distanceToCamera(spec.centre);
+                     if (distance>SETTINGS.islands.hideDistance) return false;
+                     
+                     //DRAW SUPER ISLAND
                      Shaders.set_islandHeightMapSurface_shaders();
                      Shaders.set_fog_islandHeightMapSurface(SETTINGS.fog.dMin, SETTINGS.fog.dMax, SETTINGS.fog.color)
                      VUE.drawIslandHeightMapSurface();
@@ -296,15 +303,21 @@ var SuperIsland=(function() {
                     normalsTexture.draw();
                     _gl.activeTexture(_gl.TEXTURE0);
                     colorTexture.draw();
-                    grid.drawAsIslandHeightMapSurface();
                     
+                    LodGrids.drawAsIslandHeightMapSurface(matrix, distance);
+
                     Shaders.unset_islandHeightMapSurface_shaders();
+                    
                     
                     //draw Lsystems
                     _gl.activeTexture(_gl.TEXTURE3);
                     _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
                     
                     lsystems.map(drawLsystem);
+
+                     
+                     
+                    return true;
                 },
                 
                 moveNodesAbove: function() { //used after heightmap computation to move nodes above the heightmap
@@ -362,7 +375,7 @@ var SuperIsland=(function() {
                                 x2=Math.ceil(xPx),  y2=Math.ceil(yPx);
                                     
                             //height between 0 and 255
-                            var h255=((x1-x2)*(y1-y2))?lib_maths.bilinear_interpolation(
+                            /*var h255=((x1-x2)*(y1-y2))?lib_maths.bilinear_interpolation(
                                     xPx, yPx,
                                     x1, y1,
                                     x2, y2,
@@ -370,7 +383,16 @@ var SuperIsland=(function() {
                                     getH255(x1,y2),
                                     getH255(x2,y1),
                                     getH255(x2,y2)
-                                    ):getH255(x1,y1);
+                                    ):getH255(x1,y1);*/
+                            var h255=lib_maths.bilinear_interpolation(
+                                    xPx, yPx,
+                                    x1, y1,
+                                    x2, y2,
+                                    getH255(x1,y1),
+                                    getH255(x1,y2),
+                                    getH255(x2,y1),
+                                    getH255(x2,y2)
+                                    );
                             //for debug - h with no interpolation
                             //var h255 = getH255(Math.round(xPx), Math.round(yPx));
                             
@@ -393,10 +415,6 @@ var SuperIsland=(function() {
                      }; //end Lsystems map
                      
                      lsystems.map(moveLsystem);
-                     //spec.nodes.map(moveNode);
-                     //spec.AABB.zMax+=spec.hMax;
-                     //_gl.clearColor(1.,1.,1.,1.);
-                     
                      
                      
                 } //end moveNodesAbove

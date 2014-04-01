@@ -32,7 +32,6 @@ var Vue=(function() {
                 lib_matrix4.set_I4(matrice_vue);
                 lib_matrix_rot4.rotateZ(matrice_vue, spec.theta);
                 
-
                 lib_matrix_rot4.rotateX(matrice_vue, spec.phi);
                 lib_matrix_mv.translateRot(matrice_vue, spec.camera);
             }
@@ -61,8 +60,10 @@ var Vue=(function() {
                         CV.width=window.innerWidth;
                         CV.height=window.innerHeight;
                         calcule_matrice_projection(CV.width/CV.height);
-                        SHADERS.set_matriceProjection(matrice_projection);
-                    }
+                        Shaders.set_defaultShader();
+                        Shaders.set_matriceProjection(matrice_projection);
+                        Shaders.unset_defaultShader();
+                    };
                     window.addEventListener("resize", dimensionne_canvas, true);
                     dimensionne_canvas();
                 },
@@ -100,10 +101,20 @@ var Vue=(function() {
 
                 get_cameraPosition: function() {
                     return spec.camera;
+                },
+                
+                distanceToCamera: function(point){
+                    return lib_vector.distanceMinus(spec.camera, point);
+                },
+                
+                copy_cameraXY: function(matrix) {
+                    matrix[12]=-spec.camera[0],
+                    matrix[13]=-spec.camera[1];        
                 }
-            }
+            };
+            
             calcule_matrice();
-            SHADERS.set_matriceProjection(matrice_projection);
+            Shaders.set_matriceProjection(matrice_projection);
             VUE=that;
             return that;
         }

@@ -5,6 +5,8 @@
  * spec.gl : webgl context
  * spec.margin: margin between border and nodes - default : 1
  * spec.AABB : bounding box
+ * 
+ * instancied in HeightmapSurface
  */
 var Heightmap=(function() {
     var debug={
@@ -19,7 +21,7 @@ var Heightmap=(function() {
             
             var _gl=spec.gl;
             var nGauss=SETTINGS.Lsystems.heightMapGaussPatchSizePx;
-            var nUV=spec.nUV || 10; //number of colored texture patch on the heightmap
+            var nUV=spec.nUV || SETTINGS.Lsystems.textureTileInWidth; //number of colored texture patch on the heightmap
             var scaleNode=SETTINGS.Lsystems.heightMapPatchSizePx; //patch size
             var patchAlphaRandom=SETTINGS.Lsystems.heightMapPatchAlphaRandom,
                 patchAlphaMin=SETTINGS.Lsystems.heightMapPatchAlphaMin;
@@ -139,7 +141,6 @@ var Heightmap=(function() {
                     
                     _gl.clearColor(0.,0.,0.,1.);
                     _gl.disable(_gl.DEPTH_TEST);
-                    _gl.enable(_gl.BLEND);
                     _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE);
                     _gl.viewport(0.0, 0.0, spec.size, spec.size);
                     _gl.clear(_gl.COLOR_BUFFER_BIT);
@@ -170,8 +171,8 @@ var Heightmap=(function() {
                     Shaders.unset_normals_shaders();
 
                     _gl.enable(_gl.DEPTH_TEST);
-                    _gl.disable(_gl.BLEND);
-
+                    _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA);
+                    
                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
 
                     //generate mipmaps

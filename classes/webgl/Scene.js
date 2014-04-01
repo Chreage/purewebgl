@@ -19,8 +19,11 @@ var Scene=(function () {
 
             GL.enable(GL.DEPTH_TEST);
             GL.depthFunc(GL.LEQUAL);
-            GL.clearColor(1.0, 1.0, 1.0, 1.0);
             GL.clearDepth(1.0);
+            
+            GL.enable(GL.BLEND);
+            GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+                      
 
             var highlightedNode=false;
             
@@ -42,7 +45,8 @@ var Scene=(function () {
                    
                    draw: function(timestamp) {
                        if (!running || stop) return;
-                       NNODESDISPLAYED=0;
+                       NNODESDISPLAYED=0,
+                       NNODESTEXTUREDDISPLAYED=0;
                        
                        Shaders.set_defaultShader();
                        GL.viewport(0.0, 0.0, CV.width, CV.height);
@@ -53,15 +57,8 @@ var Scene=(function () {
                        
                        Shaders.unset_defaultShader();
                        
-                       GL.enable(GL.BLEND);
-                       GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
-                       
                        lsystems.map(drawObjet);
-                       islands.map(drawObjet);
-                       
-                       GL.disable(GL.BLEND);
-                        
-                       
+                       islands.map(drawObjet);                       
                        if (water) water.draw();
 
                        GL.flush();
@@ -70,7 +67,12 @@ var Scene=(function () {
                         WEIGHTNODEMIN+=((dNodesDisplayed>0)?1:-1)
                                      * WEIGHTNODEINCREASE
                                     * Math.abs(dNodesDisplayed/NNODESDISPLAYEDMAX);
-                       
+                     
+                        var dNodesTexturedDisplayed=Math.min(NNODESTEXTUREDDISPLAYED-NNODESTEXTUREDDISPLAYEDMAX, NNODESTEXTUREDDISPLAYEDMAX);
+                        WEIGHTNODETEXTUREDMIN+=((dNodesTexturedDisplayed>0)?1:-1)
+                                     * WEIGHTNODEINCREASE
+                                    * Math.abs(dNodesTexturedDisplayed/NNODESTEXTUREDDISPLAYEDMAX);
+                            
                             
                        window.requestAnimationFrame(that.draw);
                    },

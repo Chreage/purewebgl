@@ -5,6 +5,8 @@
  *  
  *  spec.textureColorURL : url of the texture
  *  spec.textureNormalsURL
+ *  
+ *  instancied in Lsystem
  */
 
 var HeightmapSurface=(function() {
@@ -20,17 +22,14 @@ var HeightmapSurface=(function() {
             var normalsTexture=Texture.instance({
                 url: spec.textureNormalsURL || SETTINGS.Lsystems.textureNormalsURL
             });
-            
-            var grid=Grid.instance({
-                x: spec.size,
-                y: spec.size
-            });
-
-            grid.set_position(spec.centre);
-            
+           
+            var matrix=lib_matrix4.get_I4();
+            lib_matrix_mv.set_position(matrix, spec.centre);
+    
             that.drawSurface=function() { //draw heightmap
                 //called by Lsystem draw method
                 //heightMapSurface shader is already in use
+                
                 
                 VUE.drawHeightMapSurface();
 
@@ -42,10 +41,11 @@ var HeightmapSurface=(function() {
                 normalsTexture.draw();
                 _gl.activeTexture(_gl.TEXTURE0);
                 colorTexture.draw();
-                grid.drawAsHeightMapSurface();
+                
+                var distance=VUE.distanceToCamera(spec.centre);
+                LodGrids.drawAsHeightMapSurface(matrix, distance);
                 
                 Shaders.unset_heightMapSurface_shaders();
-                
             };
             
             return that;

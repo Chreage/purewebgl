@@ -3,7 +3,7 @@ precision mediump float;
 uniform vec3 lightDir, fogColor;
 uniform sampler2D sampler, samplerNormals;
 
-varying float vFog;
+varying float vFog, vAlpha;
 varying vec2 vUV;
 varying vec3 vNormal;
 
@@ -41,6 +41,6 @@ void main(void) {
     float I=dot(bump_normal,lightDir);
    // float I=dot(vNormal,lightDir);
 
-    gl_FragColor =  vec4(mix(fogColor, color.rgb*I, vFog), 1.);
+    gl_FragColor =  vec4(mix(fogColor, color.rgb*I, vFog), vAlpha);
    // gl_FragColor =  vec4(vNormal, 1.);
 }

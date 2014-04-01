@@ -36,7 +36,6 @@ var Shaders=(function (){
     var matrice_vue_water,
         matrice_projection_water,
         matrice_objet_water,
-        matrice_objet_inv_water,
         position_water,
         samplerCiel_water,
         samplerFond_water,
@@ -49,9 +48,10 @@ var Shaders=(function (){
         couleur_eau_water,
         visibilite_water,
         lumiere_water,
-        time_water;
-
-
+        time_water,
+        fogDmin_water,
+        fogDmax_water,
+        fogColor_water;
 
 
     //TEXTURE READ SHADERS
@@ -162,7 +162,6 @@ var Shaders=(function (){
             matrice_projection_water = GL.getUniformLocation(shader_program_water, "matrice_projection");
             matrice_vue_water = GL.getUniformLocation(shader_program_water, "matrice_vue");
             matrice_objet_water = GL.getUniformLocation(shader_program_water, "matrice_objet");
-            matrice_objet_inv_water = GL.getUniformLocation(shader_program_water, "matrice_objet_inv");
             camera_water = GL.getUniformLocation(shader_program_water, "camera");
             samplerCiel_water = GL.getUniformLocation(shader_program_water, "samplerCiel");
             samplerFond_water = GL.getUniformLocation(shader_program_water, "samplerFond");
@@ -175,7 +174,10 @@ var Shaders=(function (){
             visibilite_water=GL.getUniformLocation(shader_program_water, "visibilite");
             lumiere_water=GL.getUniformLocation(shader_program_water, "lumiere");
             time_water=GL.getUniformLocation(shader_program_water, "t");
-
+            fogDmin_water = GL.getUniformLocation(shader_program_water, "fogDmin");
+            fogDmax_water = GL.getUniformLocation(shader_program_water, "fogDmax");
+            fogColor_water = GL.getUniformLocation(shader_program_water, "fogColor");
+        
             position_water = GL.getAttribLocation(shader_program_water, "position");
             
             
@@ -456,6 +458,11 @@ var Shaders=(function (){
             GL.uniform1i(samplerCiel_water, 0);
             GL.uniform1i(samplerFond_water, 1);
         },
+        set_fog_water : function(dMin, dMax, color){
+            GL.uniform1f(fogDmin_water, dMin),
+            GL.uniform1f(fogDmax_water, dMax),
+            GL.uniform3fv(fogColor_water, color);
+        },
         unset_water_shader: function() {
             GL.disableVertexAttribArray(position_water);
         },
@@ -478,9 +485,8 @@ var Shaders=(function (){
             GL.uniformMatrix4fv(matrice_projection_water, false, projection);
             GL.uniformMatrix4fv(matrice_vue_water, false, vue);
         },
-        set_matriceObjet_water: function(matrice, matrice_inv) {
+        set_matriceObjet_water: function(matrice) {
             GL.uniformMatrix4fv(matrice_objet_water, false, matrice);
-            GL.uniformMatrix4fv(matrice_objet_inv_water, false, matrice_inv);
         },
         set_camera_water: function(c) {
             GL.uniform3fv(camera_water, c);

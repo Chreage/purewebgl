@@ -35,6 +35,6 @@ var Grid=(function() {
            
             return that;
         }
-    }
+    };
     
 })();

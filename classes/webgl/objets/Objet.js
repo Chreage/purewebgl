@@ -10,12 +10,12 @@ var Objet=(function() {
             var texture=spec.texture || false;
             var matrix=lib_matrix4.copyNew(spec.matrix);
             var that={
-                drawAsHeightMapSurface: function() {
-                    Shaders.set_matriceObjet_heightMapSurface(matrix);
+                drawAsHeightMapSurface: function(mat) {
+                    Shaders.set_matriceObjet_heightMapSurface(mat);
                     spec.maillage.drawAsHeightMapSurface();
                 },
-                drawAsIslandHeightMapSurface: function() {
-                    Shaders.set_matriceObjet_islandHeightMapSurface(matrix);
+                drawAsIslandHeightMapSurface: function(mat) {
+                    Shaders.set_matriceObjet_islandHeightMapSurface(mat);
                     spec.maillage.drawAsIslandHeightMapSurface();
                 },
             

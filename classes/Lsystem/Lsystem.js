@@ -66,9 +66,10 @@ var Lsystem=(function() {
                     var cRotateZ=Math.cos(angle),
                         sRotateZ=Math.sin(angle);
 
-                    var n=node.generation+1;
-                    var sc=node.scale*ScaleAdjust; //n/(n+ScaleAdjust);
+                    var n=node.generation+1,
+                        sc=node.scale*ScaleAdjust;
 
+                    //build first child
                     curs+=spec.gap;
                     if (curs>spec.list.length) return;
 
@@ -78,6 +79,7 @@ var Lsystem=(function() {
                     var child1	= createNode(node.generation+1, [x,y,z], sc, spec.list[curs], AABB);
                     nodes.push(child1);
 
+                    //build second child
                     curs+=spec.gap;
                     if (curs>spec.list.length) return;
                     
@@ -90,7 +92,7 @@ var Lsystem=(function() {
                     node.children=[nodes.length, nodes.length+1];
                     nodes.push(child2);
                 });
-            }
+            } //end computeNextGeneration
 
             var nGeneration;
             for(nGeneration = 1; nGeneration < maxGeneration; nGeneration++){
@@ -101,7 +103,7 @@ var Lsystem=(function() {
             //compute heightMap
             var heightmapSurface=HeightmapSurface.instance({
                 AABB : AABB,
-                size: SETTINGS.Lsystems.heightmapSizePx,
+                //size: SETTINGS.Lsystems.heightmapSizePx,
                 margin: SETTINGS.Lsystems.heightmapMargin,
                 gl: GL,
                 nodes: nodes,
@@ -121,7 +123,7 @@ var Lsystem=(function() {
             var drawNode=function(node){
                 //if (node.weight<WEIGHTNODEMIN) return;
                 NNODESDISPLAYED++;
-                if (NIMAGEREQS<MAXIMAGEREQS && !node.imageBusy && node.imageAvailable && !node.textureLoaded){
+                if (NIMAGEREQS<MAXIMAGEREQS && !node.imageBusy && node.imageAvailable && !node.textureLoaded && node.weight>WEIGHTNODETEXTUREDMIN){
                     //request texture
                     node.imageBusy=true,
                     node.image=new Image();
@@ -149,8 +151,9 @@ var Lsystem=(function() {
                     node.image.src='php/favicons/favicons/'+node.label.replace(/\./g, '_')+'.png';
                     console.log("get ", node.image.src);
                     NIMAGEREQS++;
-                }
+                } //end sphere texture request
                 if (node.textureLoaded) {
+                     NNODESTEXTUREDDISPLAYED++;
                      GL.bindTexture(GL.TEXTURE_2D, node.texture);
                      defaultTextureBinded=false;
                 } else if (!defaultTextureBinded){
@@ -204,7 +207,9 @@ var Lsystem=(function() {
                 draw: function() {
                     //heightMapSurface shader is already in use
                     //draw heightMap
+                     
                     heightmapSurface.drawSurface();
+                    
                     
                     //draw Spheres
                     Shaders.set_defaultShader();
@@ -237,7 +242,7 @@ var Lsystem=(function() {
                     nodes.map(function(node){
                         node.weight=-(1/(0+node.scale))*lib_vector.distanceMinus(node.position, camera);
                         //if (node.weight<WEIGHTNODEMIN) node.alpha=0;
-                        if (node.weight<WEIGHTNODEMIN-WEIGHTGCTOL){
+                        if (node.weight<WEIGHTNODETEXTUREDMIN-WEIGHTGCTOL){
                             //free the texture
                             if (node.imageAvailable && node.textureLoaded 
                                 && !node.imageBusy) {
