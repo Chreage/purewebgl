@@ -1,4 +1,7 @@
 /*
+ * 
+ * use standard shaders (in Shaders.js)
+ * 
  * spec.centre : centre de la surface liquide
  * spec.URLciel : URL de la texture de la projection equirectangulaire du ciel
  * spec.URLfond : URL de la texture du fond. morceau de 1m * 1m du fond
@@ -48,7 +51,7 @@ var SurfaceLiquide=(function() {
                 
                     vertices.push(
                         spec.d*0.5*nx, //x
-                        0,                     //y
+                        //0,                     //y
                         spec.d*0.5*nz          //z
                     );
                     if (x && z) {
@@ -126,10 +129,10 @@ var SurfaceLiquide=(function() {
             
             that.drawPhysics=function() {
                 time+=SETTINGS.water.speed;
-            }
+            };
                 
             
             return that;
         }
-    }
+    };
 })();

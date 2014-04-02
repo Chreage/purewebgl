@@ -191,7 +191,7 @@ var SuperIsland=(function() {
                     Shaders.set_fog_heightMapSurface(SETTINGS.fog.dMin, SETTINGS.fog.dMax, SETTINGS.fog.color );
                 }
                 lsystem.draw();
-            }
+            };
             
             var that={
                 compute: function(){
@@ -314,10 +314,14 @@ var SuperIsland=(function() {
                     _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
                     
                     lsystems.map(drawLsystem);
-
-                     
                      
                     return true;
+                },
+                
+                drawPhysics: function(){
+                    lsystems.map(function(ls){
+                        ls.drawPhysics(SETTINGS.physics.dt/1000);
+                    });
                 },
                 
                 moveNodesAbove: function() { //used after heightmap computation to move nodes above the heightmap

@@ -32,6 +32,7 @@ readfile('classes/Lsystem/Lsystem.js');
 readfile('classes/Lsystem/SuperIsland.js');
 
 readfile('classes/water/SurfaceLiquide.js');
+include('classes/water/RiverSystem.php');
 
 readfile('classes/LOD/LodGrids.js');
 readfile('classes/LOD/LodSpheres.js');

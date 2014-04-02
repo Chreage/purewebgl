@@ -5,25 +5,24 @@ var SCENE;
 var Scene=(function () {
     return {
         instance: function(spec) {
-            var objets=[], lsystems=[], islands=[],
+            var lsystems=[], islands=[],
                 navigation=false, stop=false, running=false, cursor="auto", water=false;
             var currentLsystemIndex=0;
 
             var drawObjet=function(objet) {
                 objet.draw();
-            }
+            },
+            drawObjetPhysics=function(objet){
+                objet.drawPhysics();
+            };
 
-            var drawObjetPhysics=function(objet) {                
-                if (objet.drawPhysics) objet.drawPhysics(objet);
-            }
-
+            //set initial WebGL states
             GL.enable(GL.DEPTH_TEST);
             GL.depthFunc(GL.LEQUAL);
             GL.clearDepth(1.0);
             
             GL.enable(GL.BLEND);
             GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
-                      
 
             var highlightedNode=false;
             
@@ -53,7 +52,6 @@ var Scene=(function () {
                        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
                        VUE.draw();
 
-                       objets.map(drawObjet);
                        
                        Shaders.unset_defaultShader();
                        
@@ -77,19 +75,21 @@ var Scene=(function () {
                        window.requestAnimationFrame(that.draw);
                    },
 
-                   drawPhysics: function() {                       
+                   drawPhysics: function() {    
+                       //camera movement amortization
                        VUE.drawPhysics();
+                       
+                       //water movement
                        if (water) water.drawPhysics();
 
-                       if (navigation) navigation.drawPhysics();
-                       objets.map(drawObjetPhysics);
+                       //rivers updates
+                       islands.map(drawObjetPhysics);
 
+                       //picking
+                       if (navigation) navigation.drawPhysics();
+                       
                        currentLsystemIndex=(currentLsystemIndex+1)%LSYSTEMS.length;
                        LSYSTEMS[currentLsystemIndex].sort(VUE.get_cameraPosition());
-                   },
-
-                   add_objet: function(objet) {
-                       objets.push(objet);
                    },
 
                    add_Lsystem: function(ls){

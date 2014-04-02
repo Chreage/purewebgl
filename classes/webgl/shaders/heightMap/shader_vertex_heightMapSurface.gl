@@ -2,7 +2,7 @@ attribute vec2 position;
 
 uniform mat4 matrice_vue, matrice_projection, matrice_objet;
 uniform float hMax, hMaxIsland,  fogDmin, fogDmax;
-uniform vec2 scale, centre, scaleUV, scaleIsland, offsetIsland;
+uniform vec2 scale, centre, scaleIsland, offsetIsland;
 uniform sampler2D samplerHeightMap, samplerIsland;
 
 varying float vFog, vAlpha;
@@ -21,8 +21,8 @@ void main(void) {
 
     vec4 posScene=matrice_vue * matrice_objet * vec4(pos, 1.0);
     gl_Position = matrice_projection * posScene;    
-    vUV = position*scaleUV;
-    //vNormal=hmColor.gba+islandHM.gba+vec3(-1.,-1.,-1.);
+
+    vUV = position;
     vNormal=normalize(hmColor.gba+islandHM.gba-vec3(1.,1.,.5));
     vFog =  1.-smoothstep(fogDmin, fogDmax, length(posScene.xyz));
     

@@ -1,66 +1,64 @@
-
 precision mediump float;
 
+attribute vec2 position;
 
-attribute vec3 position;
 uniform mat4 matrice_vue, matrice_projection, matrice_objet;
-uniform vec3 camera;         //position de la camera dans le référentiel scène
+uniform vec3 camera;         //camera position
 uniform vec2 ks[6];          //vecteurs d'onde
 uniform float As[6];         //amplitudes
 uniform float ws[6];         //frequences angulaires
 uniform float t;             //temps en secondes
 uniform float i;             //indice de réfraction
 uniform float H;             //profondeur
-uniform float visibilite;    //visibilité
+uniform float visibilite;    //visibility
 uniform float fogDmin, fogDmax; //fog distances
 uniform vec3 lumiere;        //direction de la lumiere
 
-varying vec2 UVfond, UVciel; //Coordonnées de texture du ciel et du fond
-varying float Kr, Kv;        //coefficients de réflexion et de réfraction
-varying float Il;            //intensité lumineuse
+varying vec2 UVfond, UVciel; //UV coordinates for sky and ground
+varying float Kr, Kv;        //reflexion and refraction coefficiens
+varying float Il;            //light intensity
 varying float vFog, vCaustique;          //fog coefficient
 
 
 void main(void) {
-    vec3 dP=vec3(0.,0.,0.);                           //déplacement lié à la vague
-    vec3 N=vec3(0.,1.,0.);                            //normale au point traité
-    float inSin;                                      //valeur intermédiaire
+    vec3 dP=vec3(0.,0.,0.);                           //displacement of the wave
+    vec3 N=vec3(0.,1.,0.);                            //normal vector
+    float inSin;                                      
     vec3 offset=vec3(camera.x,0., camera.y);
-    vec3 positionOffset=position-offset;
-    for (int i=0; i<6; ++i) {                         //boucle sur les vagues
+    vec3 position3=vec3(position.x,0.,position.y);
+    vec3 positionOffset=position3-offset;
+    for (int i=0; i<6; ++i) {                         //wave loop
         inSin=dot(ks[i], positionOffset.xz)+t*ws[i];
         dP.y+=0.1*As[i]*sin(inSin);
         N.xz+=As[i]*cos(inSin)*ks[i];                 //normale en une surface : N(x,y)=dM/dx ^ dM/dy
     }
     //N=vec3(0.,1.,0.);
-    vec3 P=position+dP;                               //position du point modifiée
+    vec3 P=position3+dP;                              //true point position
     N=normalize(N);
-    vec3 C=-camera.xzy;                                     //position de la caméra dans le référentiel objet
-    vec3 I=normalize(P+C);                            //vecteur incident dans le reférentiel objet
+    vec3 C=-camera.xzy;                                
+    vec3 I=normalize(P+offset+C);                            //incident vector
 
-    //rayon réfléchi :
-    vec3 R=reflect(I, N);                             //vecteur réfléchi dans le référentiel objet
-    float theta=acos(R.x/sqrt(R.x*R.x+R.z*R.z));      //coordonnée sphérique de R : longitude
-    float phi=acos(R.y);                              //coordonnée sphérique de R : lattitude
+    vec3 R=reflect(I, N);                             //reflected ray
+    float theta=acos(R.x/sqrt(R.x*R.x+R.z*R.z));      //spherical coordinates for R : longitude
+    float phi=acos(R.y);                              //spherical coordinates for R : lattitude
     UVciel=vec2(phi, theta)/6.28;
 
-    //rayon réfracté :
-    vec3 Ra=refract(-I,N,i);                         //vecteur directeur du rayon réfracté
-//  vec3 Ra=refract(I,N,i);                         //vecteur directeur du rayon réfracté
+    
+    vec3 Ra=refract(-I,N,i);                         //refracted ray
 
-    float k=H/Ra.y;                                  //distance parcourue par le rayon refracté sous l'eau. Q=P+kR
+    float k=H/Ra.y;                                  //distance runned by the ray underwater
     UVfond=(P-offset+k*Ra).xz;    
 
-    Kv=smoothstep(0., visibilite,k);                 //coefficient de visibilite. vaut 1 si on ne voit pas le fond    
-    Kr=min(1., pow(dot(I, N),2.));                                   //coefficient de Fresnel. vaut 1 pour refraction totale
+    Kv=smoothstep(0., visibilite,k);                 //Water ground visibility coefficient 1->we cannot see the ground
+    Kr=min(1., pow(dot(I, N),2.));                   //Fresnel coefficient 1->total refraction
 
     //eclairage
-    vec3 Ie=lumiere.xzy;                              //direction du rayon indicent
-    vec3 Re=reflect(Ie, N);                            //rayon reflechi de la lumiere
+    vec3 Ie=lumiere.xzy;                              //light incidence
+    vec3 Re=reflect(Ie, N);                           //light reflected ray
     Il=1.;                         //ambient lighting
-    Il+=2.*max(0.,pow(-1.5*dot(Re,Ie),8.));        //specular lighting
+    Il+=2.*max(0.,pow(-1.5*dot(Re,Ie),8.));          //specular lighting
 
-    vCaustique=length(N.xz);
+    vCaustique=length(N.xz);                        //caustics. utterly empirical...
 
     //fog
     vFog =  1.-smoothstep(fogDmin, fogDmax, distance(P-offset,C));

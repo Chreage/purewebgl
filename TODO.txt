@@ -1,4 +1,5 @@
-- iles englobantes
-- fog + skydome
 - fleuves
-
+- effet d'apparition douce
+- shader saturation
+- effet d'approche/detection collision heightmap
+- socle des spheres

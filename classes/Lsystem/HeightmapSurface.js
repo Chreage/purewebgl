@@ -16,20 +16,33 @@ var HeightmapSurface=(function() {
             var _gl=spec.gl; //we do not use automatically the global webgl context GL
                              //so as we can use another webgl context
             
-            var colorTexture=Texture.instance({
+            //material textures (color & bump)
+            var _colorTexture=Texture.instance({
                 url: spec.textureColorURL || SETTINGS.Lsystems.textureColorURL
             });
-            var normalsTexture=Texture.instance({
+            var _normalsTexture=Texture.instance({
                 url: spec.textureNormalsURL || SETTINGS.Lsystems.textureNormalsURL
             });
+    
+            //position matrix
+            var _matrix=lib_matrix4.get_I4();
+            lib_matrix_mv.set_position(_matrix, spec.centre);
+    
+    
+            //river system
+            var _rivers=RiverSystem.instance({
+                heightMapTexture : that.get_normalTexture(),
+                hMax : spec.hMax || SETTINGS.Lsystems.hMax,
+                sizePx : SETTINGS.Lsystems.heightmapSizePx,
+                width : spec.AABB.width+2*spec.margin,
+                height : spec.AABB.height+2*spec.margin
+            });
            
-            var matrix=lib_matrix4.get_I4();
-            lib_matrix_mv.set_position(matrix, spec.centre);
+            
     
             that.drawSurface=function() { //draw heightmap
                 //called by Lsystem draw method
                 //heightMapSurface shader is already in use
-                
                 
                 VUE.drawHeightMapSurface();
 
@@ -38,16 +51,21 @@ var HeightmapSurface=(function() {
                 _gl.activeTexture(_gl.TEXTURE1);
                 that.draw();
                 _gl.activeTexture(_gl.TEXTURE2);
-                normalsTexture.draw();
+                _normalsTexture.draw();
+                _gl.activeTexture(_gl.TEXTURE4);
+                _rivers.draw();
                 _gl.activeTexture(_gl.TEXTURE0);
-                colorTexture.draw();
+                _colorTexture.draw();
                 
                 var distance=VUE.distanceToCamera(spec.centre);
-                LodGrids.drawAsHeightMapSurface(matrix, distance);
+                LodGrids.drawAsHeightMapSurface(_matrix, distance);
                 
                 Shaders.unset_heightMapSurface_shaders();
             };
             
+            that.drawPhysics=function(dt){
+                _rivers.compute(dt);
+            }
             return that;
         }
     };

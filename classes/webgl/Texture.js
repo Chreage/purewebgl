@@ -40,7 +40,6 @@ var Texture=(function () {
                     GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image);
                     GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
                     GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, spec.minFilter);
-                    //GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
                     GL.generateMipmap(GL.TEXTURE_2D);
                     GL.bindTexture(GL.TEXTURE_2D, null);
                     loaded=true;

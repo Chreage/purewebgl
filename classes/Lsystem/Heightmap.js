@@ -132,6 +132,10 @@ var Heightmap=(function() {
             
             
             var that={
+                get_normalTexture: function() {
+                    return normalMapTexture;
+                },
+                
                 compute: function() {
                     //COMPUTE HEIGHTMAP
                     Shaders.set_heightMap_shaders();
@@ -179,20 +183,14 @@ var Heightmap=(function() {
                     _gl.bindTexture(_gl.TEXTURE_2D, normalMapTexture);
                     _gl.generateMipmap(_gl.TEXTURE_2D);
                     _gl.bindTexture(_gl.TEXTURE_2D, null);
-
-
-                   
-
-                  //  _gl.clearColor(1.,1.,1.,1.);
                 },
                 
                 draw: function(){
-                    //_gl.bindTexture(_gl.TEXTURE_2D, heightMapTexture);
                     Shaders.set_scaleUV_heightMapSurface(scaleU, scaleV);
                     _gl.bindTexture(_gl.TEXTURE_2D, normalMapTexture);
                     Shaders.set_dim_heightMapSurface(scaleSurface, centerSurface);
                 },
-
+                
                 moveNodesAbove: function() { //used after heightmap computation to move nodes above the heightmap
                     if (debug.heightMap || debug.normalMap) return;
                     //draw heightmap to get it with readpixel

@@ -7,7 +7,7 @@ var EXT_FLOAT, EXT_FLOAT2, EXT_UINT, EXT_FLOAT_LINEAR;
 var NNODESDISPLAYEDMAX=SETTINGS.culling.NSpheres,
     NNODESTEXTUREDDISPLAYEDMAX=SETTINGS.culling.NSpheresTextured;
         
-
+var NNODES=0;
 var WEIGHTNODEMIN=-165;
 var WEIGHTNODETEXTUREDMIN=-150;
 
@@ -64,6 +64,7 @@ var Contexte=(function() {
             Texture.init();
             LodSpheres.init();
             LodGrids.init();
+            RiverSystem.init(GL);
             
             var scene=Scene.instance({});
             var shaders=Shaders.instance({});
@@ -82,14 +83,11 @@ var Contexte=(function() {
             var N=SETTINGS.Lsystems.number; //number of Lsystems
             var n=SETTINGS.Lsystems.rank; //rank of 1 lsystem
 
-            var dAngle=Math.PI/N; //angle between 2 Lsystems
-            var R=50; //radius
-            
 
             lib_ajax.get("php/alexa/alexa.json", function(data){
                 var dataObj=JSON.parse(data);
                 var alexa=dataObj.alexa;
-                
+                /*
                 var specs=[], specs2=[];
                 for (var i=0; i<N; i++){
                     specs.push({nGenerations: n, list: alexa, offset: 2*i, gap: 2*N});
@@ -114,35 +112,25 @@ var Contexte=(function() {
                 
                 scene.add_island(myIsland2);
                 
+                */
+                var myIsland=SuperIsland.instance({
+                    Lsystems: [{nGenerations: n, list: alexa, offset: 0, gap: N},
+                               {nGenerations: n, list: alexa, offset: 1, gap: N}],
+                    centre: [0,0,0],
+                    LsystemRadius: 25,
+                    size: 180
+                }); 
+                scene.add_island(myIsland);
+               
                 scene.start();
                 var timer_physics=setInterval(SCENE.drawPhysics, SETTINGS.physics.dt);
 
                 var showGen=function() {
                     CURRENTGEN++;
                     if (CURRENTGEN>20) clearInterval(timerGen);
-                }
+                };
                 var timerGen=setInterval(showGen, SETTINGS.Lsystems.showGenDt);
             }); 
-
-            /* lib_ajax.get("php/alexa/alexa.json", function(data){
-                var dataObj=JSON.parse(data);
-                var alexa=dataObj.alexa;
-
-                scene.start();
-                var lsystem=Lsystem.instance({nGenerations: 12, centre: [20,20,0], list: alexa, offset: 0, gap: 1});
-                scene.add_Lsystem(lsystem);
-
-                console.log("Done !");
-                //scene.start();
-                
-                var timer_physics=setInterval(SCENE.drawPhysics, 16);
-
-                var showGen=function() {
-                    CURRENTGEN++;
-                    if (CURRENTGEN>20) clearInterval(timerGen);
-                }
-                var timerGen=setInterval(showGen, 1000);
-            });*/
 
             if(SETTINGS.water.enable) {
                 var eau=SurfaceLiquide.instance({
@@ -155,5 +143,5 @@ var Contexte=(function() {
                         
             return true;
         }
-    }
+    };
 })();

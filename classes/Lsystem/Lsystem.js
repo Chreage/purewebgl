@@ -13,6 +13,8 @@ var Lsystem=(function() {
             RotateZ = SETTINGS.Lsystems.angle;
 
 	function createNode(nGeneration, position, scale, label, AABB){
+            NNODES++;
+            
             AABB.xMax=Math.max(AABB.xMax, position[0]+scale),
             AABB.xMin=Math.min(AABB.xMin, position[0]+scale),
             AABB.yMax=Math.max(AABB.yMax, position[1]+scale),
@@ -207,11 +209,10 @@ var Lsystem=(function() {
                 draw: function() {
                     //heightMapSurface shader is already in use
                     //draw heightMap
-                     
                     heightmapSurface.drawSurface();
                     
-                    
                     //draw Spheres
+                    if (SETTINGS.debug.hideSpheres) return;
                     Shaders.set_defaultShader();
                     LodSpheres.reset();
                     defaultTextureBinded=false;
@@ -228,6 +229,11 @@ var Lsystem=(function() {
                     } //end for nodes
                     Shaders.unset_defaultShader();
                     
+                },
+                
+                drawPhysics: function(dt) {
+                    //update water system
+                    heightmapSurface.drawPhysics(dt);
                 },
 
                 pick: function(camera, u) {

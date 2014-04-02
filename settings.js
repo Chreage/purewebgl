@@ -4,7 +4,8 @@ var SETTINGS={
         LsystemHeightMap: false, //if true, display Lsystem heighmap and exit
         LsystemNormalMap: false, //if true, display Lsystem normalmap and exit
         islandHeightMap: false,  //if true, display island heighmap and exit
-        islandNormalMap: false   //if true, display island normalmap and exit
+        islandNormalMap: false,  //if true, display island normalmap and exit
+        hideSpheres :     true    //if true, hide Spheres
     },
     
     //mouse and keyboard
@@ -71,7 +72,7 @@ var SETTINGS={
     //super island settings
     islands : {
         sizePx: 512,                               //size in pixels of the heightmap of the island. must be POT
-        hMax: 8,                                   //max height of the island
+        hMax: .8,                                   //max height of the island
         nPatch: 100,                                //number of gaussian patch applied to build the heightmap
         patchSizeAvgPx: 200,                        //average size of a patch in pixels
         patchSizeRandomPx: 180,                     //random delta size of a patch in pixels

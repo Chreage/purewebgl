@@ -102,6 +102,7 @@ var Shaders=(function (){
         sampler_heightMapSurface,
         sampler_islandHeightMap,
         samplerNormals_heightMapSurface,
+        samplerRivers_heightMapSurface,
         samplerHeightMap_heightMapSurface,
         hMax_heightMapSurface,
         hMaxIsland_heightMapSurface,
@@ -210,6 +211,7 @@ var Shaders=(function (){
             sampler_islandHeightMap = GL.getUniformLocation(shader_program_heightMapSurface, "samplerIsland");
             samplerNormals_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "samplerNormals");
             samplerHeightMap_heightMapSurface =  GL.getUniformLocation(shader_program_heightMapSurface, "samplerHeightMap");
+            samplerRivers_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "samplerRivers");
 	    hMax_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "hMax");
 	    hMaxIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "hMaxIsland");
             offsetIsland_heightMapSurface = GL.getUniformLocation(shader_program_heightMapSurface, "offsetIsland");
@@ -289,7 +291,7 @@ var Shaders=(function (){
             GL.uniform1f(scale, s);
         },
         set_position: function(pos){
-            GL.uniform3fv(centre, pos)
+            GL.uniform3fv(centre, pos);
         },
         set_alpha: function(a){
             GL.uniform1f(alpha, a);
@@ -332,10 +334,13 @@ var Shaders=(function (){
         set_heightMapSurface_shaders: function() {
             GL.useProgram(shader_program_heightMapSurface);
             GL.enableVertexAttribArray(position_heightMapSurface);
+            
             GL.uniform1i(sampler_heightMapSurface, 0),
             GL.uniform1i(samplerHeightMap_heightMapSurface, 1),
             GL.uniform1i(samplerNormals_heightMapSurface, 2),
-            GL.uniform1i(sampler_islandHeightMap, 3);
+            GL.uniform1i(sampler_islandHeightMap, 3),
+            GL.uniform1i(samplerRivers_heightMapSurface, 4);
+    
             GL.uniform3fv(lightDir_heightMapSurface, SETTINGS.light.direction);
         },
         unset_heightMapSurface_shaders: function() {
@@ -492,7 +497,7 @@ var Shaders=(function (){
             GL.uniform3fv(camera_water, c);
         },
         set_vertexPointers_water: function() {
-            GL.vertexAttribPointer(position_water, 3, GL.FLOAT, false,12,0);
+            GL.vertexAttribPointer(position_water, 2, GL.FLOAT, false,8,0);
         }
 
         
