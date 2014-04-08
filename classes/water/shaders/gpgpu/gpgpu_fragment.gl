@@ -1,61 +1,67 @@
+/*
+* This shader implement shallow water equations
+* see http://en.wikipedia.org/wiki/Shallow_water_equations
+*
+* as a result it gives a floating point RGBA texture
+* R channel is used for water height
+* G,B,A channels are used for water speed
+*/
+
+
 precision highp float;
 
 uniform sampler2D samplerWater, samplerTerrain;
 uniform float dx, dy, dt, rain, gravity, terrainHMax, waterHMax;
+uniform vec2 scaleXY;
 
 varying vec2 vUV; 
 
-vec4 get_neightBoorInfluence(float dw, float dh, float h) {
-    vec2 uvNeightBoor=vUV+vec2(dw, dh);
-    float waterNeightBoorHeight=waterHMax*texture2D(samplerWater, uvNeightBoor).r;
-    float terrainNeightBoorHeight=terrainHMax*texture2D(samplerTerrain, uvNeightBoor).r;
-    float ziou= 0.05*(waterNeightBoorHeight+terrainNeightBoorHeight-h);
-    return vec4(ziou,0.,0.,0.);
-}
-
 void main(void) {
+    //get data at t from texture
     vec4 waterData=texture2D(samplerWater, vUV);
     float waterHeight=waterHMax*waterData.r;
     vec3 waterSpeed=waterData.gba;
 
     vec4 terrainData=texture2D(samplerTerrain, vUV);
     float terrainHeight=terrainHMax*terrainData.r;
-    vec3 terrainNormal=terrainData.gba;
+    vec2 terrainNormal=0.5*(terrainData.gb-vec2(0.5,0.5))*scaleXY/terrainHMax;
     
-    float ref=waterHeight+terrainHeight;
+    //compute wikipedia vars
+    float H=terrainHeight; //waterHeight; //total height
+    vec2 v=waterSpeed.xy;
 
-    vec2 dxy=terrainNormal.xy-vec2(0.5,0.5);
+    //compute derivatives
+    vec2 dx2=vec2(dx,0.);
+    vec2 dy2=vec2(0.,dy);
+
+    vec4 DwDx=(-texture2D(samplerWater, vUV+dx2*2.)+8.*texture2D(samplerWater, vUV+dx2)-8.*texture2D(samplerWater, vUV-dx2)+texture2D(samplerWater, vUV-2.*dx2))/(12.*dx*scaleXY.x);
+
+    vec4 DwDy=(-texture2D(samplerWater, vUV+dy2*2.)+8.*texture2D(samplerWater, vUV+dy2)-8.*texture2D(samplerWater, vUV-dy2)+texture2D(samplerWater, vUV-2.*dy2))/(12.*dy*scaleXY.y);
+
+    //vec4 DwDy=(texture2D(samplerWater, vUV+dy2)-texture2D(samplerWater, vUV-dy2))/(12.*dy*scaleXY.y);
+
+
+
+    vec2 DhDxy=vec2(DwDx.r, DwDy.r)*waterHMax;
+    vec2 DvDx=DwDx.gb;
+    vec2 DvDy=DwDy.gb;
+    float DvDxy=DvDx.x+DvDy.y;
+
+    //apply shallow water equation
+    vec2 dv=-dt*((gravity*(DhDxy-terrainNormal.xy))+0.09*v);
+    float dh=-waterHeight*dt*DvDxy;
     
-    vec2 n=-normalize(dxy)*vec2(dx,dy);
-    float waterNeightBoorHeight=waterHMax*texture2D(samplerWater, vUV+n).r;
-    float terrainNeightBoorHeight=terrainHMax*texture2D(samplerTerrain, vUV+n).r;
-    
-    waterHeight*=0.9;
-    waterHeight+=5.*length(dxy)*0.5*waterNeightBoorHeight*sign(waterNeightBoorHeight+terrainNeightBoorHeight-ref);
-
-
-    //propagation1
-    //vec4 propagate=vec4(0.,0.,0.,0.);
-    //propagate+=get_neightBoorInfluence(-dx,-dy, ref);
-    //propagate+=get_neightBoorInfluence(0.,-dy, ref);
-    //propagate+=get_neightBoorInfluence(dx,-dy, ref);
-    //propagate+=get_neightBoorInfluence(dx,0., ref);
-
-    //propagate+=get_neightBoorInfluence(dx,dy, ref);
-    //propagate+=get_neightBoorInfluence(0.,dy, ref);
-    //propagate+=get_neightBoorInfluence(-dx,dy, ref);
-    //propagate+=get_neightBoorInfluence(-dx,0., ref);
-
-    //waterHeight+=propagate.r;
-  
     //raining
-    waterHeight+=(1.-smoothstep(0., 0.5, distance(vUV,vec2(0.5,0.5))))* rain;
-    
-   // waterHeight=max(0.,waterHeight);
+    dh+=(1.-smoothstep(0., 0.5, distance(vUV,vec2(0.5,0.5))))* rain * dt;
+
+    //refresh vars
+    waterHeight+=dh;
+    waterSpeed.xy+=dv;
 
     //absorption
-    //waterHeight*=smoothstep(0.,0.01,terrainHeight);
+    waterHeight*=0.9+0.1*smoothstep(0.,0.01,terrainHeight);
 
-    gl_FragColor=vec4(waterHeight/waterHMax,waterSpeed);
- 
+    gl_FragColor=vec4(waterHeight/waterHMax,waterSpeed.xy, 1.);
+//    gl_FragColor=terrainData;
+
 }

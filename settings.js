@@ -5,7 +5,7 @@ var SETTINGS={
         LsystemNormalMap: false, //if true, display Lsystem normalmap and exit
         islandHeightMap: false,  //if true, display island heighmap and exit
         islandNormalMap: false,  //if true, display island normalmap and exit
-        hideSpheres :     true    //if true, hide Spheres
+        hideSpheres :     true   //if true, hide Spheres
     },
     
     //mouse and keyboard

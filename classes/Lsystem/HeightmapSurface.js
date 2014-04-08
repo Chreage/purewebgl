@@ -30,12 +30,13 @@ var HeightmapSurface=(function() {
     
     
             //river system
+            
             var _rivers=RiverSystem.instance({
                 heightMapTexture : that.get_normalTexture(),
                 hMax : spec.hMax || SETTINGS.Lsystems.hMax,
                 sizePx : SETTINGS.Lsystems.heightmapSizePx,
-                width : spec.AABB.width+2*spec.margin,
-                height : spec.AABB.height+2*spec.margin
+                width : spec.AABB.xMax-spec.AABB.xMin+2*spec.margin,
+                height : spec.AABB.yMax-spec.AABB.yMin+2*spec.margin
             });
            
             

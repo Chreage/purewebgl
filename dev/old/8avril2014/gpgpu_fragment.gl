@@ -1,0 +1,61 @@
+precision highp float;
+
+uniform sampler2D samplerWater, samplerTerrain;
+uniform float dx, dy, dt, rain, gravity, terrainHMax, waterHMax;
+
+varying vec2 vUV; 
+
+vec4 get_neightBoorInfluence(float dw, float dh, float h) {
+    vec2 uvNeightBoor=vUV+vec2(dw, dh);
+    float waterNeightBoorHeight=waterHMax*texture2D(samplerWater, uvNeightBoor).r;
+    float terrainNeightBoorHeight=terrainHMax*texture2D(samplerTerrain, uvNeightBoor).r;
+    float ziou= 0.05*(waterNeightBoorHeight+terrainNeightBoorHeight-h);
+    return vec4(ziou,0.,0.,0.);
+}
+
+void main(void) {
+    vec4 waterData=texture2D(samplerWater, vUV);
+    float waterHeight=waterHMax*waterData.r;
+    vec3 waterSpeed=waterData.gba;
+
+    vec4 terrainData=texture2D(samplerTerrain, vUV);
+    float terrainHeight=terrainHMax*terrainData.r;
+    vec3 terrainNormal=terrainData.gba;
+    
+    float ref=waterHeight+terrainHeight;
+
+    vec2 dxy=terrainNormal.xy-vec2(0.5,0.5);
+    
+    vec2 n=-normalize(dxy)*vec2(dx,dy);
+    float waterNeightBoorHeight=waterHMax*texture2D(samplerWater, vUV+n).r;
+    float terrainNeightBoorHeight=terrainHMax*texture2D(samplerTerrain, vUV+n).r;
+    
+    waterHeight*=0.9;
+    waterHeight+=5.*length(dxy)*0.5*waterNeightBoorHeight*sign(waterNeightBoorHeight+terrainNeightBoorHeight-ref);
+
+
+    //propagation1
+    //vec4 propagate=vec4(0.,0.,0.,0.);
+    //propagate+=get_neightBoorInfluence(-dx,-dy, ref);
+    //propagate+=get_neightBoorInfluence(0.,-dy, ref);
+    //propagate+=get_neightBoorInfluence(dx,-dy, ref);
+    //propagate+=get_neightBoorInfluence(dx,0., ref);
+
+    //propagate+=get_neightBoorInfluence(dx,dy, ref);
+    //propagate+=get_neightBoorInfluence(0.,dy, ref);
+    //propagate+=get_neightBoorInfluence(-dx,dy, ref);
+    //propagate+=get_neightBoorInfluence(-dx,0., ref);
+
+    //waterHeight+=propagate.r;
+  
+    //raining
+    waterHeight+=(1.-smoothstep(0., 0.5, distance(vUV,vec2(0.5,0.5))))* rain;
+    
+   // waterHeight=max(0.,waterHeight);
+
+    //absorption
+    //waterHeight*=smoothstep(0.,0.01,terrainHeight);
+
+    gl_FragColor=vec4(waterHeight/waterHMax,waterSpeed);
+ 
+}

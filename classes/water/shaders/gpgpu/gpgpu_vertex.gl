@@ -1,3 +1,6 @@
+/*
+* All computations are done into fragment shader
+*/
 attribute vec2 position;
 
 varying vec2 vUV;

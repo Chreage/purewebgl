@@ -1,20 +1,36 @@
 precision highp float;
 
 uniform sampler2D samplerWater, samplerMaterial;
+uniform float dx,dy;
 
 varying vec2 vUV; 
 
-void main(void) {
-    vec4 waterData=texture2D(samplerWater, vUV);
-    float waterHeight=waterData.r;
-    vec3 waterSpeed=waterData.gba;
 
-    vec4 waterColor=texture2D(samplerMaterial, vUV*10.);
+void main(void) {
+    vec4 waterData=texture2D(samplerWater, vUV)
+                  +texture2D(samplerWater, vUV+vec2(dx,0.))
+                  +texture2D(samplerWater, vUV+vec2(dx,dy))
+                  +texture2D(samplerWater, vUV+vec2(0.,dy))
+                  +texture2D(samplerWater, vUV+vec2(-dx,dy))
+                  +texture2D(samplerWater, vUV+vec2(-dx,0.))
+                  +texture2D(samplerWater, vUV+vec2(-dx,-dy))
+                  +texture2D(samplerWater, vUV+vec2(0.,-dy))
+                  +texture2D(samplerWater, vUV+vec2(dx,-dy));
+
+
+    float waterHeight=waterData.r/9.;
+   // vec3 waterSpeed=waterData.gba;
+
+    vec4 waterColor=texture2D(samplerMaterial, vUV);
     
     //waterColor=vec4(1.,0.,0.,1.); //for debug only
     
     //vec4 color=vec4(waterHeight, 0., 0.,1.);
-    
-    vec4 color=vec4(waterColor.rgb,waterHeight);
+    //vec4 color=vec4(waterSpeed.xy,0.,1.);
+
+    //vec4 color=vec4(waterData.gba, 1.);
+    vec4 color=vec4(waterColor.rgb,0.5*smoothstep(0.1, 0.5, waterHeight));
+   // vec4 color=vec4(waterHeight, texture2D(samplerWater, vUV).r, dx*512.,1.);
+
     gl_FragColor=color;
 } 
