@@ -131,6 +131,7 @@ var Shaders=(function (){
         sampler_islandHeightMapSurface,
         samplerNormals_islandHeightMapSurface,
         samplerHeightMap_islandHeightMapSurface,
+        samplerRivers_islandHeightMapSurface,
         hMax_islandHeightMapSurface,
         matrice_objet_islandHeightMapSurface,
         matrice_vue_islandHeightMapSurface,
@@ -244,6 +245,7 @@ var Shaders=(function (){
             sampler_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "sampler");
             samplerNormals_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "samplerNormals");
             samplerHeightMap_islandHeightMapSurface =  GL.getUniformLocation(shader_program_islandHeightMapSurface, "samplerHeightMap");
+            samplerRivers_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "samplerRivers");
 	    hMax_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "hMax");
 	    lightDir_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "lightDir");
             fogDmin_islandHeightMapSurface = GL.getUniformLocation(shader_program_islandHeightMapSurface, "fogDmin");
@@ -393,9 +395,10 @@ var Shaders=(function (){
         set_islandHeightMapSurface_shaders: function() {
             GL.useProgram(shader_program_islandHeightMapSurface);
             GL.enableVertexAttribArray(position_islandHeightMapSurface);
-            GL.uniform1i(sampler_islandHeightMapSurface, 0);
-            GL.uniform1i(samplerHeightMap_islandHeightMapSurface, 1);
-            GL.uniform1i(samplerNormals_islandHeightMapSurface, 2);
+            GL.uniform1i(sampler_islandHeightMapSurface, 0),
+            GL.uniform1i(samplerHeightMap_islandHeightMapSurface, 1),
+            GL.uniform1i(samplerNormals_islandHeightMapSurface, 2),
+            GL.uniform1i(samplerRivers_islandHeightMapSurface, 3);
             GL.uniform3fv(lightDir_islandHeightMapSurface, SETTINGS.light.direction);
         },
         unset_islandHeightMapSurface_shaders: function() {

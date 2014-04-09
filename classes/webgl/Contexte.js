@@ -120,10 +120,12 @@ var Contexte=(function() {
                 */
                 var myIsland=SuperIsland.instance({
                     Lsystems: [{nGenerations: n, list: alexa, offset: 0, gap: N},
-                               {nGenerations: n, list: alexa, offset: 1, gap: N}],
+                               {nGenerations: n, list: alexa, offset: 1, gap: N},
+                               {nGenerations: n, list: alexa, offset: 2, gap: N},
+                               {nGenerations: n, list: alexa, offset: 3, gap: N}],
                     centre: [0,0,0],
-                    LsystemRadius: 25,
-                    size: 180
+                    LsystemRadius: SETTINGS.islands.collisionRadius,
+                    size: 100
                 }); 
                 scene.add_island(myIsland);
                

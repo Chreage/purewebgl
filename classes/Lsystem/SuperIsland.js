@@ -29,6 +29,7 @@ var SuperIsland=(function() {
             islandHeightMap: SETTINGS.debug.islandHeightMap,
             islandNormalMap: SETTINGS.debug.islandNormalMap
         };
+    var _dt=SETTINGS.physics.dt/1000;    
             
     return {
         instance: function(spec){
@@ -194,6 +195,8 @@ var SuperIsland=(function() {
                 lsystem.draw();
             };
             
+            var _rivers=false;
+            
             var that={
                 compute: function(){
                     //compute height map
@@ -218,7 +221,7 @@ var SuperIsland=(function() {
                     gaussianPatchVBOIndices.bind();
                     _gl.bindTexture(_gl.TEXTURE_2D, islandGaussTexture);                    
                     //draw patches loop
-                    var x,y,i, lsi, lsj, k, patchScale, patchPosition=[0,0], patchAlpha;
+                    var x,y,i, lsi, lsj, k, patchScale, patchPosition=[0,0], patchAlpha, d;
                     
                     for (i=0; i<spec.nPatch; i++){
                         
@@ -228,18 +231,26 @@ var SuperIsland=(function() {
                         while(lsj===lsi)
                             lsj=Math.floor(Math.random()*spec.Lsystems.length);
                         
+                        //compute exclusion
+                        d=SETTINGS.islands.patchExclusionRadius/lib_vector.distanceDim2(centers[lsi], centers[lsj]);
+                        
+                        
                         //take a random position between the 2 lsystems
-                        k=Math.random();
+                        k=d+((1-2*d)*Math.random());
+                        //k=Math.random();
                         x=k*centers[lsi][0]+(1-k)*centers[lsj][0],
                         y=k*centers[lsi][1]+(1-k)*centers[lsj][1];
+                     
+                        x+=SETTINGS.islands.patchDistanceMaxRandom*Math.random(),
+                        y+=SETTINGS.islands.patchDistanceMaxRandom*Math.random(),
                      
                         //position between -1 and 1
                         patchPosition[0]=(2*x/spec.size)-1,
                         patchPosition[1]=(2*y/spec.size)-1;
                                 
                         //scale and transparency of the gaussian bump
-                        patchScale=(spec.patchSizeAvgPx+ Math.random()*spec.patchSizeRandomPx)/spec.sizePx;
-                        patchAlpha=spec.patchAlphaAvg+ Math.random()*spec.patchAlphaRandom;
+                        patchScale=(spec.patchSizeAvgPx+ (Math.random()-0.5)*2*spec.patchSizeRandomPx)/spec.sizePx;
+                        patchAlpha=spec.patchAlphaAvg+ (Math.random()-0.5)*2*spec.patchAlphaRandom;
                         
                         Shaders.set_node_heightMap([patchScale,patchScale], patchPosition, patchAlpha);
                         gaussianPatchVBOIndices.draw_Elements();
@@ -280,7 +291,17 @@ var SuperIsland=(function() {
                     _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
                     _gl.generateMipmap(_gl.TEXTURE_2D);
                     _gl.bindTexture(_gl.TEXTURE_2D, null);
-                },
+                    
+                    _rivers=RiverSystem.instance({
+                        heightMapTexture :  islandNormalMapTexture,
+                        hMax : spec.hMax,
+                        sizePx : spec.sizePx,
+                        width : spec.size,
+                        height : spec.size,
+                        rain: 0.05
+                    });
+            
+                }, //end compute
                 
                 //draw in the render loop
                 draw: function(){
@@ -302,6 +323,8 @@ var SuperIsland=(function() {
                     _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
                     _gl.activeTexture(_gl.TEXTURE2);
                     normalsTexture.draw();
+                    _gl.activeTexture(_gl.TEXTURE3);
+                    if (_rivers) _rivers.draw();
                     _gl.activeTexture(_gl.TEXTURE0);
                     colorTexture.draw();
                     
@@ -321,8 +344,9 @@ var SuperIsland=(function() {
                 
                 drawPhysics: function(){
                     lsystems.map(function(ls){
-                        ls.drawPhysics(SETTINGS.physics.dt/1000);
+                      //  ls.drawPhysics(_dt);
                     });
+                    _rivers.compute(_dt)
                 },
                 
                 moveNodesAbove: function() { //used after heightmap computation to move nodes above the heightmap
@@ -433,7 +457,7 @@ var SuperIsland=(function() {
             }
             return that;
             
-        }
+        } //end instance
         
     };
     

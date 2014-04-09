@@ -1,7 +1,7 @@
 precision mediump float;
 
 uniform vec3 lightDir, fogColor;
-uniform sampler2D sampler, samplerNormals;
+uniform sampler2D sampler, samplerNormals, samplerRivers;
 
 varying float vFog;
 varying vec2 vUV;
@@ -29,6 +29,8 @@ mat3 rot_vectVect(vec3 u,vec3 v) {
 
 
 void main(void) {
+    vec4 colorRiver=texture2D(samplerRivers, vUV);
+
     vec4 color=texture2D(sampler, vUV);
     vec4 texture_normale=texture2D(samplerNormals, vUV);
     vec3 n=vec3(2.*(texture_normale.x-0.5), 2.*(texture_normale.y-0.5), texture_normale.z);
@@ -39,5 +41,7 @@ void main(void) {
     //float I=dot(bump_normal,lightDir);
     float I=dot(vNormal,lightDir);
 
-    gl_FragColor =  vec4(mix(fogColor, color.rgb*I, vFog), 1.);
+    vec3 col=I*mix(color.rgb, colorRiver.rgb, colorRiver.a);
+   // gl_FragColor = colorRiver;
+    gl_FragColor =  vec4(mix(fogColor, col, vFog), 1.);
 }

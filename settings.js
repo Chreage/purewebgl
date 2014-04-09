@@ -66,7 +66,7 @@ var SETTINGS={
         textureNormalsURL :"images/textures/sand_normal.png",      //normal texture for previous texture. must match previous texture
         textureTileInWidth: 10,                                    //number of color texture repeatition in width
         
-        gridDistanceLodMin: 100,                                     //distance from the camera to the center of the grid from which grid is display with its minimum LOD
+        gridDistanceLodMin: 300,                                     //distance from the camera to the center of the grid from which grid is display with its minimum LOD
         erodeTexturesURL: ['images/textures/erosion/grandcan.png'],  //list of erosion texture which will be randomly applied to Lsystem heightmaps (1 texture per heightmap)
         riversRefreshDistance: 100                                   //refresh rivers system only if distance to camera is smaller than this distance
         
@@ -74,18 +74,21 @@ var SETTINGS={
     
     //super island settings
     islands : {
-        sizePx: 512,                               //size in pixels of the heightmap of the island. must be POT
-        hMax: .8,                                   //max height of the island
-        nPatch: 100,                                //number of gaussian patch applied to build the heightmap
-        patchSizeAvgPx: 200,                        //average size of a patch in pixels
-        patchSizeRandomPx: 180,                     //random delta size of a patch in pixels
+        sizePx: 1024,                               //size in pixels of the heightmap of the island. must be POT
+        hMax: 4,                                   //max height of the island
+        nPatch: 300,                                //number of gaussian patch applied to build the heightmap
+        patchSizeAvgPx: 600,                        //average size of a patch in pixels
+        patchSizeRandomPx: 400,                     //random delta size of a patch in pixels
         patchGaussSizePx: 512,                      //size of a gaussian patch texture in pixel. must be POT
-        patchAlphaAvg: 0.07,                        //average transparency of a patch. 0->fully transparent, 1-> fully opaque
-        patchAlphaRandom: 0.04,
+        patchAlphaAvg: 0.02,                        //average transparency of a patch. 0->fully transparent, 1-> fully opaque
+        patchAlphaRandom: 0.15,
+        patchDistanceMaxRandom: 10,                  //distance max to add to the patch position
         textureColorURL:"images/textures/sand.png", //for heightmap surface - must be POT
         textureNormalsURL :"images/textures/sand_normal.png", //normal texture for previous texture. must match previous texture
         textureTileInWidth: 10,                                    //number of color texture repeatition in width
-        vtOffset: 0.00001,                                  //vertical positive offset of the island
+        vtOffset: 0.001,                                  //vertical positive offset of the island
+        collisionRadius: 25,                              //minimum distance between 2 Lsystems, in world units
+        patchExclusionRadius: 10,                            //minimum distance between the center of a Lsystem and a patch
         
         gridDistanceLodMin: 200, //distance from the camera to the center of the grid from which grid is display with its minimum LOD
         hideDistance: 500        //do not draw the island if it is more distant than this distance
