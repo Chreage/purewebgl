@@ -6,6 +6,7 @@
  *  spec.textureColorURL : url of the texture
  *  spec.textureNormalsURL
  *  
+ *  
  *  instancied in Lsystem
  */
 
@@ -65,8 +66,10 @@ var HeightmapSurface=(function() {
             };
             
             that.drawPhysics=function(dt){
-                _rivers.compute(dt);
-            }
+                if (VUE.distanceToCamera(spec.centre)<SETTINGS.Lsystems.riversRefreshDistance){
+                    _rivers.compute(dt);
+                }
+            };
             return that;
         }
     };

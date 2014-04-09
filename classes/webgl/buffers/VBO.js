@@ -15,6 +15,11 @@ var VBO=(function() {
                    Shaders.set_vertexPointers();
                 },
                 
+                drawErode: function() { //for default rendering (nodes)             
+                   GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
+                   Shaders.set_vertexPointers_erode();
+                },
+                
                 draw_heightMap: function() { //draw with heightmap creation shaders
                     GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;
                     Shaders.set_vertexPointers_heightMap();

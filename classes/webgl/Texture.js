@@ -1,6 +1,7 @@
 /*
  * spec.url: texture url
  * spec.minFilter. default : GL.NEAREST_MIPMAP_LINEAR
+ * spec.onload: function launched when texture is ready
  */
 var Texture=(function () {
     var defaultTextureLoaded, defaultTexture;
@@ -8,7 +9,7 @@ var Texture=(function () {
         //this function must be called after the creation of webgl context GL
         init: function() { 
             //build default texture
-            
+            defaultTexture=GL.createTexture();
             var defaultTextureImage=new Image();
             defaultTextureImage.onload=function(event){
                 GL.bindTexture(GL.TEXTURE_2D, defaultTexture);
@@ -18,7 +19,7 @@ var Texture=(function () {
                 GL.generateMipmap(GL.TEXTURE_2D);
                 GL.bindTexture(GL.TEXTURE_2D, null);
                 defaultTextureLoaded=true;
-            }
+            };
             
             defaultTextureImage.src=SETTINGS.Lsystems.defaultTextureImageURL;
         },
@@ -43,6 +44,7 @@ var Texture=(function () {
                     GL.generateMipmap(GL.TEXTURE_2D);
                     GL.bindTexture(GL.TEXTURE_2D, null);
                     loaded=true;
+                    if (spec.onload) spec.onload();
            };
            image.onload=function() { load(); };
 

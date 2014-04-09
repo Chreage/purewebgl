@@ -167,10 +167,10 @@ var RiverSystem=(function() {
             
             //set default parameters
             spec.simuSizePx = spec.simuSizePx || spec.sizePx,
-            spec.rain = spec.rain || 0.01,
-            spec.nPass = spec.nPass || 8,
-            spec.gravity = spec.gravity ||0.5,
-            spec.waterHMax = spec.waterHMax || 2.;
+            spec.rain = spec.rain || 0.0000001,
+            spec.nPass = spec.nPass || 4,
+            spec.gravity = spec.gravity ||0.6,
+            spec.waterHMax = spec.waterHMax || 1.2;
             
             //INIT WATER HEIGHTAND SPEED TEXTURE
             //WATER HEIGHT is stored into red channel
@@ -227,9 +227,10 @@ var RiverSystem=(function() {
             _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
             
             var dx=.5/spec.simuSizePx;
-            var dy=dx; //*spec.height/spec.width;
+            var dy=dx*spec.height/spec.width;
             
             var scaleXY=[spec.width, spec.height];
+            var rainTimer=0;
             
             var that={
                 //draw the rivers on a colormap
@@ -239,6 +240,12 @@ var RiverSystem=(function() {
                 
                 //compute a pass with delta time dt in seconds
                 compute: function(dt){
+                    rainTimer+=dt;
+                    var rain=0;
+                    if (rainTimer>1){ //apply rain every second
+                        rainTimer=0;
+                        rain=spec.rain;
+                    }
                     _gl.disable(_gl.BLEND); //to use alpha channel like a normal channel
                     
                     _gl.clearColor(0,0,0,0);
@@ -279,11 +286,14 @@ var RiverSystem=(function() {
                     _gl.uniform1f(_dy_gpgpu, dy);
                     _gl.uniform2fv(_scaleXY_gpgpu, scaleXY);
                     _gl.uniform1f(_dt_gpgpu, dt/spec.nPass);
-                    _gl.uniform1f(_rain_gpgpu, spec.rain);
+                    _gl.uniform1f(_rain_gpgpu, rain);
                     _gl.uniform1f(_gravity_gpgpu, spec.gravity);
                     _gl.uniform1f(_waterHMax_gpgpu, spec.waterHMax);
                     _gl.uniform1f(_terrainHMax_gpgpu, spec.hMax);
-                    }        
+                    } else if (i===1) {
+                        _gl.uniform1f(_rain_gpgpu, 0);
+                    }
+                    
                     
                     //bind textures
                     _gl.activeTexture(_gl.TEXTURE1);
@@ -307,8 +317,8 @@ var RiverSystem=(function() {
                     _gl.useProgram(_shader_program_rendering);
                     _gl.enableVertexAttribArray(_position_rendering);
                     
-                    _gl.uniform1f(_dx_rendering, dx*1.5);
-                    _gl.uniform1f(_dy_rendering, dy*1.5);
+                    _gl.uniform1f(_dx_rendering, dx*2.5);
+                    _gl.uniform1f(_dy_rendering, dy*2.5);
                     
                     //bind textures
                     _gl.activeTexture(_gl.TEXTURE1);

@@ -8,6 +8,7 @@ var Scene=(function () {
             var lsystems=[], islands=[],
                 navigation=false, stop=false, running=false, cursor="auto", water=false;
             var currentLsystemIndex=0;
+            var timer_physics;
 
             var drawObjet=function(objet) {
                 objet.draw();
@@ -31,6 +32,7 @@ var Scene=(function () {
                    start: function(){
                        running=true;
                        that.draw();
+                       timer_physics=setInterval(that.drawPhysics, SETTINGS.physics.dt);
                    },
                    
                    pause: function() {
@@ -38,8 +40,11 @@ var Scene=(function () {
                    },
                    
                    stop: function(){
+                       //for debug only
+                       STOP=true;
                        stop=true;
                        running=false;
+                       if (timer_physics) clearInterval(timer_physics);
                    },
                    
                    draw: function(timestamp) {
@@ -76,6 +81,8 @@ var Scene=(function () {
                    },
 
                    drawPhysics: function() {    
+                       if (stop) return;
+                       
                        //camera movement amortization
                        VUE.drawPhysics();
                        

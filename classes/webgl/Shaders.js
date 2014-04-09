@@ -1,7 +1,6 @@
 /*
  * spec: empty
  */
-var SHADERS;
 var Shaders=(function (){
 
     var get_shader=function(source, type, strtype) {
@@ -26,9 +25,19 @@ var Shaders=(function (){
             GL.linkProgram(shader_program);
 
             return shader_program;
-    }
+    };
+    
+    //ERODE SHADERS (2D)
+    var shader_vertex_source_erode="$SHADER_VERTEX_ERODE$",
+        shader_fragment_source_erode="$SHADER_FRAGMENT_ERODE$",
+        shader_program_erode;
+  
+    var position_erode,
+        sampler_erodeMap_erode,
+        sampler_heightMap_erode;
+    
 
-    //WATER SHADERS
+    //WATER SHADERS (3D)
     var shader_vertex_source_water="$SHADER_VERTEX_WATER$",
         shader_fragment_source_water="$SHADER_FRAGMENT_WATER$",
         shader_program_water;
@@ -54,22 +63,20 @@ var Shaders=(function (){
         fogColor_water;
 
 
-    //TEXTURE READ SHADERS
+    //TEXTURE READ SHADERS (2D)
     var shader_vertex_source_textureRead="$SHADER_VERTEX_TEXTUREREAD$",
-        shader_fragment_source_textureRead="$SHADER_FRAGMENT_TEXTUREREAD$";
-
-    var shader_program_textureRead;
+        shader_fragment_source_textureRead="$SHADER_FRAGMENT_TEXTUREREAD$",
+        shader_program_textureRead;
 
     var position_textureRead,
         sampler_textureRead;
 
 
 
-    //HEIGHTMAP TO NORMAL MAP VARS
+    //HEIGHTMAP TO NORMAL MAP VARS (2D)
      var shader_vertex_source_normals="$SHADER_VERTEX_NORMALS$",
-        shader_fragment_source_normals="$SHADER_FRAGMENT_NORMALS$";
-
-    var shader_program_normals;
+         shader_fragment_source_normals="$SHADER_FRAGMENT_NORMALS$",
+         shader_program_normals;
 
     var position_normals,
         sampler_normals,
@@ -77,12 +84,10 @@ var Shaders=(function (){
         H_normals,
         size_normals;
 
-
-    //HEIGHTMAP RENDERING VARS
+    //HEIGHTMAP RENDERING VARS (2D)
     var shader_vertex_source_heightMap="$SHADER_VERTEX_HEIGHTMAP$",
-        shader_fragment_source_heightMap="$SHADER_FRAGMENT_HEIGHTMAP$";
-        
-    var shader_program_heightMap;
+        shader_fragment_source_heightMap="$SHADER_FRAGMENT_HEIGHTMAP$",
+        shader_program_heightMap;
     
     var scale_heightMap, centre_heightMap,
         position_heightMap,
@@ -90,11 +95,10 @@ var Shaders=(function (){
         alpha_heightMap;
 
     
-    //HEIGHTMAP SURFACE RENDERING VARS
+    //HEIGHTMAP SURFACE RENDERING VARS (3D)
     var shader_vertex_source_heightMapSurface="$SHADER_VERTEX_HEIGHTMAPSURFACE$",
-        shader_fragment_source_heightMapSurface="$SHADER_FRAGMENT_HEIGHTMAPSURFACE$";
-        
-    var shader_program_heightMapSurface;
+        shader_fragment_source_heightMapSurface="$SHADER_FRAGMENT_HEIGHTMAPSURFACE$",
+        shader_program_heightMapSurface;
     
     var scale_heightMapSurface, centre_heightMapSurface,
         scaleUV_heightMapSurface,
@@ -116,11 +120,10 @@ var Shaders=(function (){
         fogColor_heightMapSurface,
         lightDir_heightMapSurface;
     
-    //ISLAND HEIGHTMAP SURFACE RENDERING VARS
+    //ISLAND HEIGHTMAP SURFACE RENDERING VARS (3D)
     var shader_vertex_source_islandHeightMapSurface="$SHADER_VERTEX_ISLANDHEIGHTMAPSURFACE$",
-        shader_fragment_source_islandHeightMapSurface="$SHADER_FRAGMENT_ISLANDHEIGHTMAPSURFACE$";
-        
-    var shader_program_islandHeightMapSurface;
+        shader_fragment_source_islandHeightMapSurface="$SHADER_FRAGMENT_ISLANDHEIGHTMAPSURFACE$",
+        shader_program_islandHeightMapSurface;
     
     var scale_islandHeightMapSurface, centre_islandHeightMapSurface,
         scaleUV_islandHeightMapSurface,
@@ -138,11 +141,10 @@ var Shaders=(function (){
         lightDir_islandHeightMapSurface;
         
     
-    //GLASS RENDERING VARS
+    //GLASS RENDERING VARS (3D)
     var shader_vertex_source="$SHADER_VERTEX$",
-        shader_fragment_source="$SHADER_FRAGMENT$";
-
-    var shader_program;
+        shader_fragment_source="$SHADER_FRAGMENT$",
+        shader_program;
 
     var matrice_vue,
         matrice_projection,
@@ -158,6 +160,13 @@ var Shaders=(function (){
 
     var that={
         instance: function(spec) {
+            //EROSION MAP SHADER
+            shader_program_erode=get_shaderProgram(shader_vertex_source_erode, shader_fragment_source_erode, "ERODE");
+            sampler_erodeMap_erode = GL.getUniformLocation(shader_program_erode, "samplerErode");
+            sampler_heightMap_erode = GL.getUniformLocation(shader_program_erode, "samplerHeight");
+            position_erode = GL.getAttribLocation(shader_program_erode, "position");
+
+            
             //WATER SHADERS
             shader_program_water=get_shaderProgram(shader_vertex_source_water, shader_fragment_source_water, "WATER");
             matrice_projection_water = GL.getUniformLocation(shader_program_water, "matrice_projection");
@@ -498,11 +507,22 @@ var Shaders=(function (){
         },
         set_vertexPointers_water: function() {
             GL.vertexAttribPointer(position_water, 2, GL.FLOAT, false,8,0);
-        }
-
+        },
         
+        //EROSION
+        set_erode_shaders: function() {
+            GL.useProgram(shader_program_erode);
+            GL.enableVertexAttribArray(position_erode);
+            GL.uniform1i(sampler_erodeMap_erode,1);
+            GL.uniform1i(sampler_heightMap_erode,0);
+        },
+        unset_erode_shaders: function() {
+            GL.disableVertexAttribArray(position_erode);
+        },
+        set_vertexPointers_erode: function() {
+            GL.vertexAttribPointer(position_erode, 2, GL.FLOAT, false,8,0) ;
+        }
     };
-    SHADERS=that;
     return that;
 
 })();

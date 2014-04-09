@@ -98,11 +98,12 @@ var SuperIsland=(function() {
                 var centre=[
                     spec.centre[0]+x-spec.size/2,
                     spec.centre[1]+y-spec.size/2,
-                    spec.centre[2]-0.001]; //offset Z to avoid flickering
+                    spec.centre[2]-SETTINGS.islands.vtOffset]; //offset Z to avoid flickering
                 
                 //create Lsystem
                 lspec.centre=centre;
                 var lsystem=Lsystem.instance(lspec);
+                if (STOP) return false;
                 lsystems.push(lsystem);
                 LSYSTEMS.push(lsystem);
                 
@@ -122,7 +123,7 @@ var SuperIsland=(function() {
                 
             }); //end Lsystems loop
             
-            if (SETTINGS.debug.LsystemHeightMap || SETTINGS.debug.LsystemNormalMap) return;
+            if (STOP || SETTINGS.debug.LsystemHeightMap || SETTINGS.debug.LsystemNormalMap) return;
                 
                 
             //get gauss texture as floatTexture

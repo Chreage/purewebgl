@@ -11,7 +11,9 @@
     }
 
     $replace=array(
-
+        stripShader("classes/webgl/shaders/erode/shader_fragment_erode.gl"),
+        stripShader("classes/webgl/shaders/erode/shader_vertex_erode.gl"),
+        
         stripShader("classes/webgl/shaders/water/shader_fragment_water.gl"),
         stripShader("classes/webgl/shaders/water/shader_vertex_water.gl"),
 
@@ -35,6 +37,9 @@
     );
 
     $search=array(
+        '$SHADER_FRAGMENT_ERODE$',
+        '$SHADER_VERTEX_ERODE$',
+        
         '$SHADER_FRAGMENT_WATER$',
         '$SHADER_VERTEX_WATER$',
 

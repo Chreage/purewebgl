@@ -3,6 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/var/www/3dnews/chreage/purewebgl/classes/water/shaders/rendering/rendering_fragment.gl</file>
+            <file>file:/var/www/3dnews/chreage/purewebgl/classes/webgl/shaders/heightMap/shader_fragment_heightMapSurface.gl</file>
+            <file>file:/var/www/3dnews/chreage/purewebgl/classes/water/RiverSystem.js</file>
+            <file>file:/var/www/3dnews/chreage/purewebgl/classes/water/shaders/gpgpu/gpgpu_fragment.gl</file>
+        </group>
     </open-files>
 </project-private>

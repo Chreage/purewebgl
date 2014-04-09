@@ -21,6 +21,8 @@ var NNODESDISPLAYED=0,
 var MAXIMAGEREQS=SETTINGS.culling.maxImageReqs,
     NIMAGEREQS=0;
 
+var ERODETEXTURESSET, STOP=false;
+
 var Contexte=(function() {
     return {
         instance: function(spec) {
@@ -65,6 +67,8 @@ var Contexte=(function() {
             LodSpheres.init();
             LodGrids.init();
             RiverSystem.init(GL);
+            Heightmap.init(GL);
+            ErodeTexturesSet.init();
             
             var scene=Scene.instance({});
             var shaders=Shaders.instance({});
@@ -83,7 +87,8 @@ var Contexte=(function() {
             var N=SETTINGS.Lsystems.number; //number of Lsystems
             var n=SETTINGS.Lsystems.rank; //rank of 1 lsystem
 
-
+            ERODETEXTURESSET=ErodeTexturesSet.instance({
+                onload: function() {
             lib_ajax.get("php/alexa/alexa.json", function(data){
                 var dataObj=JSON.parse(data);
                 var alexa=dataObj.alexa;
@@ -123,14 +128,16 @@ var Contexte=(function() {
                 scene.add_island(myIsland);
                
                 scene.start();
-                var timer_physics=setInterval(SCENE.drawPhysics, SETTINGS.physics.dt);
-
+                
                 var showGen=function() {
                     CURRENTGEN++;
                     if (CURRENTGEN>20) clearInterval(timerGen);
                 };
                 var timerGen=setInterval(showGen, SETTINGS.Lsystems.showGenDt);
             }); 
+                }, //end erodeTexturesSet onload
+               texturesURL: SETTINGS.Lsystems.erodeTexturesURL
+           }); //end ERODETEXTURESSET instanciation
 
             if(SETTINGS.water.enable) {
                 var eau=SurfaceLiquide.instance({

@@ -105,12 +105,13 @@ var Lsystem=(function() {
             //compute heightMap
             var heightmapSurface=HeightmapSurface.instance({
                 AABB : AABB,
-                //size: SETTINGS.Lsystems.heightmapSizePx,
+                size: SETTINGS.Lsystems.heightmapSizePx,
                 margin: SETTINGS.Lsystems.heightmapMargin,
                 gl: GL,
                 nodes: nodes,
                 hMax: SETTINGS.Lsystems.hMax,
-                centre: spec.centre
+                centre: spec.centre,
+                erodeTexturesSet: ERODETEXTURESSET
             });
 
             //move spheres above heightmap

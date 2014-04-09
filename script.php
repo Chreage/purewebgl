@@ -1,7 +1,9 @@
 <?php
 header('content-type: text/javascript');
+//settings
 readfile('settings.js');
 
+//libraries (only JS funcs)
 include('libs/libs.php');
 
 readfile('classes/webgl/Contexte.js');
@@ -31,9 +33,12 @@ readfile('classes/Lsystem/HeightmapSurface.js');
 readfile('classes/Lsystem/Lsystem.js');
 readfile('classes/Lsystem/SuperIsland.js');
 
+//water stuffs
 readfile('classes/water/SurfaceLiquide.js');
+readfile('classes/water/ErodeTexturesSet.js');
 include('classes/water/RiverSystem.php');
 
+//LOD stuffs
 readfile('classes/LOD/LodGrids.js');
 readfile('classes/LOD/LodSpheres.js');
 

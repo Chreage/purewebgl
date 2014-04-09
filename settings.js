@@ -5,7 +5,8 @@ var SETTINGS={
         LsystemNormalMap: false, //if true, display Lsystem normalmap and exit
         islandHeightMap: false,  //if true, display island heighmap and exit
         islandNormalMap: false,  //if true, display island normalmap and exit
-        hideSpheres :     true   //if true, hide Spheres
+        hideSpheres :     true,   //if true, hide Spheres
+        ErodeTexture:     false,  //if true, display Lsystem heughmap with erosion and exit
     },
     
     //mouse and keyboard
@@ -52,20 +53,22 @@ var SETTINGS={
         scaleBranch: 6,   //scale of a branch at gen 0
         angle: Math.PI/5,  //angle
         
-        heightmapSizePx: 512,                 //heightmap size in pixels. must be POT
+        heightmapSizePx: 1024,                 //heightmap size in pixels. must be POT
         heightmapMargin: 2,                   //heightmap margin in world units
         hMax: 4,                              //max height of the Lsystem, excluding island height
-        heightMapGaussPatchSizePx: 16,        //size of a gauss patch in pixels. Must be POT
-        heightMapPatchSizePx: 40,             //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
+        heightMapGaussPatchSizePx: 256,        //size of a gauss patch in pixels. Must be POT
+        heightMapPatchSizePx: 60,             //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
         heightMapPatchAlphaMin: 0.05,         //min alpha of a gauss patch. Must be between 0 (fully transparent) and 1 (opaque)
         heightMapPatchAlphaRandom: 0.05,      //random part of the gauss patch transparency.
         
         defaultTextureImageURL: "images/textures/pixelBlack.jpg",  //when there is no favicon, use this. must be POT
-        textureColorURL:"images/textures/sand.png",               //for heightmap surface - must be POT
-        textureNormalsURL :"images/textures/sand_normal.png",     //normal texture for previous texture. must match previous texture
+        textureColorURL:"images/textures/sand.png",                //for heightmap surface - must be POT
+        textureNormalsURL :"images/textures/sand_normal.png",      //normal texture for previous texture. must match previous texture
         textureTileInWidth: 10,                                    //number of color texture repeatition in width
         
-        gridDistanceLodMin: 100 //distance from the camera to the center of the grid from which grid is display with its minimum LOD
+        gridDistanceLodMin: 100,                                     //distance from the camera to the center of the grid from which grid is display with its minimum LOD
+        erodeTexturesURL: ['images/textures/erosion/grandcan.png'],  //list of erosion texture which will be randomly applied to Lsystem heightmaps (1 texture per heightmap)
+        riversRefreshDistance: 100                                   //refresh rivers system only if distance to camera is smaller than this distance
         
     },
     
@@ -82,6 +85,7 @@ var SETTINGS={
         textureColorURL:"images/textures/sand.png", //for heightmap surface - must be POT
         textureNormalsURL :"images/textures/sand_normal.png", //normal texture for previous texture. must match previous texture
         textureTileInWidth: 10,                                    //number of color texture repeatition in width
+        vtOffset: 0.00001,                                  //vertical positive offset of the island
         
         gridDistanceLodMin: 200, //distance from the camera to the center of the grid from which grid is display with its minimum LOD
         hideDistance: 500        //do not draw the island if it is more distant than this distance
@@ -115,7 +119,7 @@ var SETTINGS={
         curve : 5,                                 //spherical curve of the water surface
         color: [0.2, 0.5, 0.9, 1.0], //[0.1, 0.2, 0.2, 1.0],               //water color
         visibility: 3.5,                           //visibility under water
-        center: [0,0,0.1],                          //water surface center
+        center: [0,0,0.2],                          //water surface center
         speed: 0.04
     },
     

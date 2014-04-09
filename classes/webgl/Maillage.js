@@ -28,6 +28,11 @@ var Maillage=(function () {
                 drawVBO: function() {
                     vbo.draw();
                 },
+                
+                drawErode: function() {
+                    vbo.drawErode();
+                    vbo_indices.draw();
+                },
 
                 drawVBOIndices: function()  {
                     vbo_indices.draw();
