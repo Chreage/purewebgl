@@ -9,8 +9,9 @@ header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 $csv=file_get_contents('../alexa/alexa.csv');
 $rows=explode("\n", $csv);
 
-$Nmax=2000;
+$Nmax=200;
 $ATLASURL='favicons.png';
+$AVANCEMENTURL='avancement.txt';
 
 $N=0;
 
@@ -44,8 +45,11 @@ foreach ($rows as $row){
     imagedestroy($imTmp);
     
     //copy($request, $name);
-    if (!($N%100)) {
-        echo "number : $N <br/>\n";
+    if (!($N%500)) {
+        $avancement="number : $N <br/>\n";
+        file_put_contents($AVANCEMENTURL, $avancement);
+        chmod($AVANCEMENTURL, 0777);
+        echo $avancement;
         ob_flush();
         flush();
     }
@@ -55,3 +59,6 @@ foreach ($rows as $row){
 @unlink($ATLASURL);
 imagepng($imAtlas, $ATLASURL);
 imagedestroy($imAtlas);
+
+chmod($imAtlas, 0777);
+@unlink($AVANCEMENTURL);
