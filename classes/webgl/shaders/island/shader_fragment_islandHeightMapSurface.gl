@@ -36,18 +36,21 @@ void main(void) {
     vec2 UVscaled=vUV*scaleUV;
     vec4 color=texture2D(sampler, UVscaled);
     vec4 texture_normale=texture2D(samplerNormals, UVscaled);
-    vec3 n=vec3(2.*(texture_normale.x-0.5), 2.*(texture_normale.y-0.5), texture_normale.z);
-    mat3 rot=rot_vectVect(Z, vNormal);
-    //vec3 bump_normal=rot*n;
-    vec3 bump_normal=mix(rot*n, vec3(0.,0.,1.1), min(1., colorRiver.a*4.));
 
+    //vec3 n=vec3((texture_normale.x-0.5), (texture_normale.y-0.5), texture_normale.z);
+    //mat3 rot=rot_vectVect(Z, vNormal);
+    //vec3 bump_normal=rot*n;
+    //vec3 bump_normal=mix(rot*n, vec3(0.,0.,1.), min(1., colorRiver.a*4.));
+
+    float riverK= step(0.1, colorRiver.a)*colorRiver.a;
+    vec3 bump_normal=mix(vNormal, vec3(0.,0.,1.), min(1., riverK*1.));
 
     //light intensity
     float I=dot(bump_normal,lightDir);
     //float I=dot(vNormal,lightDir);
 
    
-    vec3 col=I*mix(color.rgb, colorRiver.rgb, colorRiver.a);
+    vec3 col=I*mix(color.rgb, colorRiver.rgb, riverK);
    
     //compute alpha to mix water river and sea water near the seashore
     float alpha=mix(1., vHeight,min(1.,16.*colorRiver.a));

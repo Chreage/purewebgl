@@ -6,7 +6,7 @@ var SETTINGS={
         islandHeightMap: false,  //if true, display island heighmap and exit
         islandNormalMap: false,  //if true, display island normalmap and exit
         hideSpheres :     true,   //if true, hide Spheres
-        ErodeTexture:     false,  //if true, display Lsystem heughmap with erosion and exit
+        ErodeTexture:     false  //if true, display Lsystem heughmap with erosion and exit
     },
     
     //mouse and keyboard
@@ -57,7 +57,7 @@ var SETTINGS={
         heightmapMargin: 2,                   //heightmap margin in world units
         hMax: 4,                              //max height of the Lsystem, excluding island height
         heightMapGaussPatchSizePx: 256,        //size of a gauss patch in pixels. Must be POT
-        heightMapPatchSizePx: 60,             //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
+        heightMapPatchSizePx: 70,             //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
         heightMapPatchAlphaMin: 0.05,         //min alpha of a gauss patch. Must be between 0 (fully transparent) and 1 (opaque)
         heightMapPatchAlphaRandom: 0.05,      //random part of the gauss patch transparency.
         
@@ -68,30 +68,34 @@ var SETTINGS={
         
         gridDistanceLodMin: 300,                                     //distance from the camera to the center of the grid from which grid is display with its minimum LOD
         erodeTexturesURL: ['images/textures/erosion/grandcan2.jpg'],  //list of erosion texture which will be randomly applied to Lsystem heightmaps (1 texture per heightmap)
-        riversRefreshDistance: 40                                   //refresh rivers system only if distance to camera is smaller than this distance
+        riversRefreshDistance: 80                                   //refresh rivers system only if distance to camera is smaller than this distance
         
     },
     
     //super island settings
     islands : {
         sizePx: 1024,                               //size in pixels of the heightmap of the island. must be POT
-        size: 200,                                  //size of an island (length of a side) in world units
-        hMax: 8,                                   //max height of the island
+        size: 180,                                  //size of an island (length of a side) in world units
+        hMax: 16,                                   //max height of the island
         nPatch: 300,                                //number of gaussian patch applied to build the heightmap
         patchSizeAvgPx: 600,                        //average size of a patch in pixels
         patchSizeRandomPx: 400,                     //random delta size of a patch in pixels
         patchGaussSizePx: 512,                      //size of a gaussian patch texture in pixel. must be POT
-        patchAlphaAvg: 0.02,                        //average transparency of a patch. 0->fully transparent, 1-> fully opaque
-        patchAlphaRandom: 0.15,
+        patchAlphaAvg: 0.005,                        //average transparency of a patch. 0->fully transparent, 1-> fully opaque
+        patchAlphaRandom: 0.005,
         patchDistanceMaxRandom: 10,                  //distance max to add to the patch position
         textureColorURL:"images/textures/sand.png", //for heightmap surface - must be POT
         textureNormalsURL :"images/textures/sand_normal.png", //normal texture for previous texture. must match previous texture
         textureTileInWidth: 100,                                    //number of color texture repeatition in width
         vtOffset: 0.001,                                  //vertical positive offset of the island
         collisionRadius: 45,                              //minimum distance between 2 Lsystems, in world units
+        collisionRadiusMargin: 40,                        //minimum distance between a Lsystem and the border of the island, in world units
+        centerExclusionRadius: 60,                         //minimum distance between the center of a Lsystem and the center of the island
         patchExclusionRadius: 10,                            //minimum distance between the center of a Lsystem and a patch
+        mountainTexturesURL: ['images/textures/erosion/mountain1024.png'],  //list of mountain heightmaps which will be randomly applied to the island heightmap
         
-        gridDistanceLodMin: 200,                        //distance from the camera to the center of the grid from which grid is display with its minimum LOD
+        
+        gridDistanceLodMin: 400,                        //distance from the camera to the center of the grid from which grid is display with its minimum LOD
         hideDistance: 500,                              //do not draw the island if it is more distant than this distance
         riversRefreshDistance: 150                      //refresh rivers system only if distance to camera is smaller than this distance
     },

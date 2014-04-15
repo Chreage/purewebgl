@@ -178,7 +178,7 @@ var Heightmap=(function() {
 
                     //COMPUTE EROSION
                     if (spec.erodeTexturesSet) {
-                        heightMapTexture=spec.erodeTexturesSet.erode(heightMapTexture, spec.size);
+                        heightMapTexture=spec.erodeTexturesSet.erode(heightMapTexture, spec.size, false);
                         if (!heightMapTexture){ //debug mode or error happens
                             return false;
                         }

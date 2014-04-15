@@ -33,6 +33,7 @@ var Shaders=(function (){
         shader_program_erode;
   
     var position_erode,
+        emboss_erode,
         sampler_erodeMap_erode,
         sampler_heightMap_erode;
     
@@ -163,6 +164,7 @@ var Shaders=(function (){
         instance: function(spec) {
             //EROSION MAP SHADER
             shader_program_erode=get_shaderProgram(shader_vertex_source_erode, shader_fragment_source_erode, "ERODE");
+            emboss_erode = GL.getUniformLocation(shader_program_erode, "emboss");
             sampler_erodeMap_erode = GL.getUniformLocation(shader_program_erode, "samplerErode");
             sampler_heightMap_erode = GL.getUniformLocation(shader_program_erode, "samplerHeight");
             position_erode = GL.getAttribLocation(shader_program_erode, "position");
@@ -513,11 +515,12 @@ var Shaders=(function (){
         },
         
         //EROSION
-        set_erode_shaders: function() {
+        set_erode_shaders: function(emboss) {
             GL.useProgram(shader_program_erode);
             GL.enableVertexAttribArray(position_erode);
             GL.uniform1i(sampler_erodeMap_erode,1);
             GL.uniform1i(sampler_heightMap_erode,0);
+            GL.uniform1f(emboss_erode, emboss);
         },
         unset_erode_shaders: function() {
             GL.disableVertexAttribArray(position_erode);

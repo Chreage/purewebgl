@@ -55,7 +55,7 @@ var ErodeTexturesSet=(function() {
             
             return {
                 //apply erosion texture to heightMap
-                erode: function(heightmap, sizeOutputPx) {
+                erode: function(heightmap, sizeOutputPx, emboss) {
                     
                     //create output texture and link it to the rendering fbo
                     var outputTexture=GL.createTexture();
@@ -77,7 +77,7 @@ var ErodeTexturesSet=(function() {
                     var i=Math.floor(Math.random()*_nTextures);
                   
                     //draw output texture
-                    Shaders.set_erode_shaders();
+                    Shaders.set_erode_shaders((emboss)?1:0);
                     GL.clearColor(0,0,0,0);
                     GL.clear(GL.COLOR_BUFFER_BIT);
                     

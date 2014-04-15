@@ -3,6 +3,7 @@
  * 
  * spec.centre : center of the Island
  * spec.LsystemRadius : collision radius for Lsystems
+ * spec.LsystemRadiusMargin collision radius for margins
  * spec.size : size of the full island (size max)
  * 
  * spec.sizePx : Size of the heightMap in pixels. must be pot
@@ -23,6 +24,8 @@
  * spec.textureNormalsURL
  * 
  * spec.scaleUV : number of color/normal texture tiles
+ * spec.mountainTexturesSet : texture collection of mountain heightmaps
+ * 
  */
 var SuperIsland=(function() {
     var debug={
@@ -77,10 +80,20 @@ var SuperIsland=(function() {
             spec.Lsystems.map(function(lspec){
                 //choose position
                 var i,x,y,dx,dy,collide=true,n=0,xNorm,yNorm;
+                var dxCenter, dyCenter;
+                var centerExclusionRadius2=SETTINGS.islands.centerExclusionRadius*SETTINGS.islands.centerExclusionRadius;
                 
                 while(collide && n<100) {
-                    x=spec.LsystemRadius+Math.random()*(spec.size-2*spec.LsystemRadius),
-                    y=spec.LsystemRadius+Math.random()*(spec.size-2*spec.LsystemRadius);
+                    //x and y in world units, between 0 and spec.Size
+                    x=spec.LsystemRadiusMargin+Math.random()*(spec.size-2*spec.LsystemRadiusMargin),
+                    y=spec.LsystemRadiusMargin+Math.random()*(spec.size-2*spec.LsystemRadiusMargin);
+                    dxCenter=x-spec.size/2,
+                    dyCenter=y-spec.size/2;
+                    
+                    if (dxCenter*dxCenter+dyCenter*dyCenter<centerExclusionRadius2) {
+                        n++;
+                        continue;
+                    }
                     
                     collide=false;
                     for (i=0; i<centers.length; i++){
@@ -263,6 +276,14 @@ var SuperIsland=(function() {
                     if (debug.islandHeightMap) return;
 
 
+                    //COMPUTE EMBOSSING EROSION
+                    if (spec.mountainTexturesSet) {
+                        islandHeightMapTexture=spec.mountainTexturesSet.erode(islandHeightMapTexture, spec.sizePx, true);
+                        if (!islandHeightMapTexture){ //debug mode or error happens
+                            return false;
+                        }
+                    }
+
                     
                     //COMPUTE ISLAND NORMAL MAP
                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, (debug.islandNormalMap)?null:islandNormalMapFBO);
@@ -298,7 +319,9 @@ var SuperIsland=(function() {
                         sizePx : spec.sizePx,
                         width : spec.size,
                         height : spec.size,
-                        rain: 0.001
+                        rain: 0.00001,
+                        gravity: 4,
+                        waterHMax: 3
                     });
             
                 }, //end compute

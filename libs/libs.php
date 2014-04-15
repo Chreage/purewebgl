@@ -7,6 +7,7 @@ readfile('libs/matrix/lib_matrix_mv.js');
 
 readfile('libs/lib_vector.js');
 readfile('libs/lib_maths.js');
+readfile('libs/lib_array.js');
 readfile('libs/lib_time.js');
 readfile('libs/lib_ajax.js');
 readfile('libs/lib_intersect.js');

@@ -21,9 +21,12 @@ var NNODESDISPLAYED=0,
 var MAXIMAGEREQS=SETTINGS.culling.maxImageReqs,
     NIMAGEREQS=0;
 
-var ERODETEXTURESSET, STOP=false;
+var ERODETEXTURESSET, MOUNTAINTEXTURESSET, ALEXADATA=false, STOP=false;
+
 
 var Contexte=(function() {
+    var nLoaded=0;
+    
     return {
         instance: function(spec) {
             var canvas=document.getElementById(spec.canvas_id);
@@ -61,7 +64,7 @@ var Contexte=(function() {
             } catch (e) {
 		alert("Webgl not found") ;
                 return false;
-            } ;
+            } ; //end GL initialisation
             
             Texture.init();
             LodSpheres.init();
@@ -87,10 +90,12 @@ var Contexte=(function() {
             var N=SETTINGS.Lsystems.number; //number of Lsystems
             var n=SETTINGS.Lsystems.rank; //rank of 1 lsystem
 
-            ERODETEXTURESSET=ErodeTexturesSet.instance({
-                onload: function() {
-            lib_ajax.get("php/alexa/alexa.json", function(data){
-                var dataObj=JSON.parse(data);
+            var checkLoaded=function() {
+                nLoaded++;
+                if (nLoaded!==3) return;
+                
+                
+                var dataObj=JSON.parse(ALEXADATA);
                 var alexa=dataObj.alexa;
                 /*
                 var specs=[], specs2=[];
@@ -98,25 +103,25 @@ var Contexte=(function() {
                     specs.push({nGenerations: n, list: alexa, offset: 2*i, gap: 2*N});
                     specs2.push({nGenerations: n, list: alexa, offset: 2*i+1, gap: 2*N});
                 }
-                
+
                 var myIsland=SuperIsland.instance({
                     Lsystems: specs,
                     centre: [90,0,0],
                     LsystemRadius: 25,
                     size: 160
                 });
-                
+
                 scene.add_island(myIsland);
-                
+
                 var myIsland2=SuperIsland.instance({
                     Lsystems: specs2,
                     centre: [-90,0,0],
                     LsystemRadius: 25,
                     size: 160
                 });
-                
+
                 scene.add_island(myIsland2);
-                
+
                 */
                 var myIsland=SuperIsland.instance({
                     Lsystems: [{nGenerations: n, list: alexa, offset: 0, gap: N},
@@ -125,21 +130,40 @@ var Contexte=(function() {
                                {nGenerations: n, list: alexa, offset: 3, gap: N}],
                     centre: [0,0,0],
                     LsystemRadius: SETTINGS.islands.collisionRadius,
-                    size: SETTINGS.islands.size
+                    LsystemRadiusMargin: SETTINGS.islands.collisionRadiusMargin,
+                    size: SETTINGS.islands.size,
+                    mountainTexturesSet: MOUNTAINTEXTURESSET
+                    //mountainHeightMapURL: lib_array.get_random(SETTINGS.islands.mountainTexturesURL)
                 }); 
                 scene.add_island(myIsland);
-               
+
                 scene.start();
-                
+
                 var showGen=function() {
                     CURRENTGEN++;
                     if (CURRENTGEN>20) clearInterval(timerGen);
                 };
                 var timerGen=setInterval(showGen, SETTINGS.Lsystems.showGenDt);
-            }); 
-                }, //end erodeTexturesSet onload
-               texturesURL: SETTINGS.Lsystems.erodeTexturesURL
-           }); //end ERODETEXTURESSET instanciation
+                //}); //end ajax get
+
+             }; //end checkLoaded()
+             
+             lib_ajax.get("php/alexa/alexa.json", function(data){
+                 ALEXADATA=data;
+                 checkLoaded();
+             });
+             
+             MOUNTAINTEXTURESSET=ErodeTexturesSet.instance({
+                    onload: checkLoaded,
+                    texturesURL: SETTINGS.islands.mountainTexturesURL
+             }); //end moutaintextureset instance
+             
+             ERODETEXTURESSET=ErodeTexturesSet.instance({
+                    onload: checkLoaded,
+                   texturesURL: SETTINGS.Lsystems.erodeTexturesURL
+             }); //end ERODETEXTURESSET instanciation
+
+
 
             if(SETTINGS.water.enable) {
                 var eau=SurfaceLiquide.instance({

@@ -38,7 +38,7 @@ var RiverSystem=(function() {
         _terrainHMax_gpgpu, _waterHMax_gpgpu,
         _samplerWater_gpgpu, _samplerTerrain_gpgpu,
         
-        _samplerWater_rendering, _samplerMaterial_rendering,
+        _samplerWater_rendering, _samplerMaterial_rendering, _samplerWaterPrevious_rendering,
          _dx_rendering, _dy_rendering,
         
         _quadVerticesVBO, _quadIndicesVBO,
@@ -120,6 +120,7 @@ var RiverSystem=(function() {
             _dx_rendering = _gl.getUniformLocation(_shader_program_rendering, "dx"),
             _dy_rendering = _gl.getUniformLocation(_shader_program_rendering, "dy"),
             _samplerWater_rendering = _gl.getUniformLocation(_shader_program_rendering, "samplerWater"),
+            _samplerWaterPrevious_rendering = _gl.getUniformLocation(_shader_program_rendering, "samplerWaterPrevious"),
             _samplerMaterial_rendering = _gl.getUniformLocation(_shader_program_rendering, "samplerMaterial");
             
             _position_rendering = _gl.getAttribLocation(_shader_program_rendering, "position");
@@ -128,6 +129,7 @@ var RiverSystem=(function() {
             _gl.useProgram(_shader_program_rendering);
             _gl.uniform1i(_samplerWater_rendering, 0);
             _gl.uniform1i(_samplerMaterial_rendering, 1);
+            _gl.uniform1i(_samplerWaterPrevious_rendering, 2);
             
             
             //QUAD VBOs
@@ -169,8 +171,8 @@ var RiverSystem=(function() {
             spec.simuSizePx = spec.simuSizePx || spec.sizePx,
             spec.rain = spec.rain || 0.0000001,
             spec.nPass = spec.nPass || 2,
-            spec.gravity = spec.gravity ||0.6,
-            spec.waterHMax = spec.waterHMax || 1.2;
+            spec.gravity = spec.gravity ||0.9,
+            spec.waterHMax = spec.waterHMax || 5;
             
             //INIT WATER HEIGHTAND SPEED TEXTURE
             //WATER HEIGHT is stored into red channel
@@ -226,7 +228,7 @@ var RiverSystem=(function() {
             _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, rendering_texture, 0);
             _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
             
-            var dx=.5/spec.simuSizePx;
+            var dx=0.5/spec.simuSizePx;
             var dy=dx*spec.height/spec.width;
             
             var scaleXY=[spec.width, spec.height];
@@ -317,10 +319,13 @@ var RiverSystem=(function() {
                     _gl.useProgram(_shader_program_rendering);
                     _gl.enableVertexAttribArray(_position_rendering);
                     
-                    _gl.uniform1f(_dx_rendering, dx*2.5);
-                    _gl.uniform1f(_dy_rendering, dy*2.5);
+                    _gl.uniform1f(_dx_rendering, dx*2.1);
+                    _gl.uniform1f(_dy_rendering, dy*2.1);
                     
                     //bind textures
+                    _gl.activeTexture(_gl.TEXTURE2);
+                    _gl.bindTexture(_gl.TEXTURE_2D, rendering_texture);
+                    
                     _gl.activeTexture(_gl.TEXTURE1);
                     _gl.bindTexture(_gl.TEXTURE_2D, _waterMaterialTexture);
                     

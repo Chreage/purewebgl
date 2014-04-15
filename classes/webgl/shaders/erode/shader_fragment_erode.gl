@@ -1,6 +1,8 @@
 precision highp float;
 
+uniform float emboss;
 uniform sampler2D samplerErode, samplerHeight;
+
 varying vec2 vUV;
 
 void main(void) {
@@ -8,6 +10,10 @@ void main(void) {
     vec4 erode=texture2D(samplerErode, vUV);
 
     float eroded=height.r*(0.01+0.99*erode.r);
+    float embossed=max(height.r, erode.r);
+
+    float ziou=mix(eroded, embossed, emboss);
+    //float ziou=eroded;
     //gl_FragColor=texture2D(sampler_height, vUV);
-    gl_FragColor=vec4(eroded, 0.,0.,1.);
+    gl_FragColor=vec4(ziou, 0.,0.,1.);
 } 
