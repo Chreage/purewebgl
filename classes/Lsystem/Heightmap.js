@@ -133,6 +133,7 @@ var Heightmap=(function() {
 
 
             var drawNode=function(node){
+                if (node.generation>SETTINGS.Lsystems.heightMapPatchMaxGen) return;
                 nodeScale[0]=node.scale*scaleNode[0],
                 nodeScale[1]=node.scale*scaleNode[1];
         
@@ -162,6 +163,7 @@ var Heightmap=(function() {
                     
                     _gl.clearColor(0.,0.,0.,1.);
                     _gl.disable(_gl.DEPTH_TEST);
+                    _gl.depthMask(false);
                     _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE);
                     _gl.viewport(0.0, 0.0, spec.size, spec.size);
                     _gl.clear(_gl.COLOR_BUFFER_BIT);
@@ -177,7 +179,7 @@ var Heightmap=(function() {
                     if (debug.heightMap) return false;
 
                     //COMPUTE EROSION
-                    if (spec.erodeTexturesSet) {
+                    if (spec.erodeTexturesSet && !SETTINGS.debug.noErosionLsystems) {
                         heightMapTexture=spec.erodeTexturesSet.erode(heightMapTexture, spec.size, false);
                         if (!heightMapTexture){ //debug mode or error happens
                             return false;
@@ -201,6 +203,7 @@ var Heightmap=(function() {
                     Shaders.unset_normals_shaders();
 
                     _gl.enable(_gl.DEPTH_TEST);
+                    _gl.depthMask(true);
                     _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA);
                     
                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);

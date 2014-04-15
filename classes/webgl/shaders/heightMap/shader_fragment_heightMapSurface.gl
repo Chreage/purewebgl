@@ -4,7 +4,7 @@ uniform vec2 scaleUV;
 uniform vec3 lightDir, fogColor;
 uniform sampler2D sampler, samplerNormals, samplerRivers;
 
-varying float vFog, vAlpha;
+varying float vFog, vAlpha, vHeight;
 varying vec2 vUV;
 varying vec3 vNormal;
 
@@ -38,16 +38,16 @@ void main(void) {
     vec4 texture_normale=texture2D(samplerNormals, uvScaled);
     vec3 n=vec3(2.*(texture_normale.x-0.5), 2.*(texture_normale.y-0.5), texture_normale.z);
     mat3 rot=rot_vectVect(Z, normalize(vNormal));
-    vec3 bump_normal=mix(rot*n, vec3(0.,0.,1.1), min(1., colorRiver.a*4.));
+    float Kriver=step(0.1, colorRiver.a)*colorRiver.a;
+    vec3 bump_normal=mix(rot*n, vec3(0.,0.,1.1), min(1., Kriver*2.));
 
     //light intensity
     float I=dot(bump_normal,lightDir);
  
-   
+    float alpha=vAlpha*mix(1., vHeight,min(1.,16.*Kriver));
 
+    vec3 col=I*mix(color.rgb, colorRiver.rgb, Kriver);
 
-    vec3 col=I*mix(color.rgb, colorRiver.rgb, colorRiver.a);
-
-    gl_FragColor =  vec4(mix(fogColor, col, vFog), vAlpha);
+    gl_FragColor =  vec4(mix(fogColor, col, vFog), alpha);
    
 }

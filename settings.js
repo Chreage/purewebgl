@@ -6,7 +6,8 @@ var SETTINGS={
         islandHeightMap: false,  //if true, display island heighmap and exit
         islandNormalMap: false,  //if true, display island normalmap and exit
         hideSpheres :     true,   //if true, hide Spheres
-        ErodeTexture:     false  //if true, display Lsystem heughmap with erosion and exit
+        ErodeTexture:     false,  //if true, display Lsystem heighmap with erosion and exit
+        noErosionLsystems: true,  //if true, do not erode Lsystems
     },
     
     //mouse and keyboard
@@ -54,12 +55,13 @@ var SETTINGS={
         angle: Math.PI/5,  //angle
         
         heightmapSizePx: 1024,                 //heightmap size in pixels. must be POT
-        heightmapMargin: 2,                   //heightmap margin in world units
-        hMax: 4,                              //max height of the Lsystem, excluding island height
-        heightMapGaussPatchSizePx: 256,        //size of a gauss patch in pixels. Must be POT
-        heightMapPatchSizePx: 70,             //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
-        heightMapPatchAlphaMin: 0.05,         //min alpha of a gauss patch. Must be between 0 (fully transparent) and 1 (opaque)
-        heightMapPatchAlphaRandom: 0.05,      //random part of the gauss patch transparency.
+        heightmapMargin: 4,                   //heightmap margin in world units
+        hMax: 3,                              //max height of the Lsystem, excluding island height
+        heightMapGaussPatchSizePx: 512,        //size of a gauss patch in pixels. Must be POT
+        heightMapPatchSizePx: 70,  //50            //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
+        heightMapPatchAlphaMin: 0.1,//0.05         //min alpha of a gauss patch. Must be between 0 (fully transparent) and 1 (opaque)
+        heightMapPatchAlphaRandom: 0.1,      //random part of the gauss patch transparency.
+        heightMapPatchMaxGen:8,               //draw patch for L systems generation < this level
         
         defaultTextureImageURL: "images/textures/pixelBlack.jpg",  //when there is no favicon, use this. must be POT
         textureColorURL:"images/textures/sand.png",                //for heightmap surface - must be POT

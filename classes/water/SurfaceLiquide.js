@@ -1,5 +1,5 @@
 /*
- * 
+ * used for the sea
  * use standard shaders (in Shaders.js)
  * 
  * spec.centre : centre de la surface liquide

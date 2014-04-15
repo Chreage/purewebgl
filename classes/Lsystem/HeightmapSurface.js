@@ -39,7 +39,7 @@ var HeightmapSurface=(function() {
                 width : spec.AABB.xMax-spec.AABB.xMin+2*spec.margin,
                 height : spec.AABB.yMax-spec.AABB.yMin+2*spec.margin,
                 rain: 0.0001,
-                waterHMax: 0.5
+                waterHMax: 0.7
             });
            
             

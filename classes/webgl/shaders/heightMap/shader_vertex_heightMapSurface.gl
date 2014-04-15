@@ -5,7 +5,7 @@ uniform float hMax, hMaxIsland,  fogDmin, fogDmax;
 uniform vec2 scale, centre, scaleIsland, offsetIsland;
 uniform sampler2D samplerHeightMap, samplerIsland;
 
-varying float vFog, vAlpha;
+varying float vFog, vAlpha, vHeight;
 varying vec2 vUV;
 varying vec3 vNormal;
 
@@ -27,5 +27,5 @@ void main(void) {
     vUV = position;
     vNormal=normalize(hmColor.gba+islandHM.gba-vec3(1.,1.,.5));
     vFog =  1.-smoothstep(fogDmin, fogDmax, length(posScene.xyz));
-    
+    vHeight=smoothstep(0.2, 0.5, pos.z);
 }
