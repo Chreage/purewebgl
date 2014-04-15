@@ -168,7 +168,7 @@ var RiverSystem=(function() {
             //set default parameters
             spec.simuSizePx = spec.simuSizePx || spec.sizePx,
             spec.rain = spec.rain || 0.0000001,
-            spec.nPass = spec.nPass || 4,
+            spec.nPass = spec.nPass || 2,
             spec.gravity = spec.gravity ||0.6,
             spec.waterHMax = spec.waterHMax || 1.2;
             

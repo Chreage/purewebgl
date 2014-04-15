@@ -61,8 +61,9 @@ var Scene=(function () {
                        Shaders.unset_defaultShader();
                        
                        lsystems.map(drawObjet);
-                       islands.map(drawObjet);                       
                        if (water) water.draw();
+                       islands.map(drawObjet);                       
+                       //if (water) water.draw();
 
                        GL.flush();
                        

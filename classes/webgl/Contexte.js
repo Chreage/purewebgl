@@ -125,7 +125,7 @@ var Contexte=(function() {
                                {nGenerations: n, list: alexa, offset: 3, gap: N}],
                     centre: [0,0,0],
                     LsystemRadius: SETTINGS.islands.collisionRadius,
-                    size: 100
+                    size: SETTINGS.islands.size
                 }); 
                 scene.add_island(myIsland);
                

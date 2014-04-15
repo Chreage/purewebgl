@@ -1,7 +1,7 @@
-- fleuves en implémentant les équations de saint venant
 - eau sur les big island
 - chopper ttes les favicon et les grouper dans des texture atlas
 - positionnement des L systems en backoffice (donner indice du lsystem, indice du texture atlas, UV, position du lsystem)
 - shader saturation
 - effet d'approche/detection collision heightmap
 - socle des spheres
+- AO sur heightmaps des Lsystems

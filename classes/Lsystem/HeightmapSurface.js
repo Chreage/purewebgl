@@ -66,6 +66,7 @@ var HeightmapSurface=(function() {
             };
             
             that.drawPhysics=function(dt){
+                //apply LOD on water simulation (very expensive)
                 if (VUE.distanceToCamera(spec.centre)<SETTINGS.Lsystems.riversRefreshDistance){
                     _rivers.compute(dt);
                 }

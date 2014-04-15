@@ -2,11 +2,11 @@ attribute vec2 position;
 
 uniform mat4 matrice_vue, matrice_projection, matrice_objet;
 uniform float hMax, fogDmin, fogDmax;
-uniform vec2 scale, centre, scaleUV;
+uniform vec2 scale, centre;
 uniform sampler2D samplerHeightMap;
 
 
-varying float vFog;
+varying float vFog, vHeight;
 varying vec2 vUV;
 varying vec3 vNormal;
 
@@ -20,7 +20,8 @@ void main(void) {
     vec4 posScene=matrice_vue * matrice_objet * vec4(pos, 1.0);
     gl_Position = matrice_projection * posScene;    
 
-    vUV = position*scaleUV;
+    vUV = position;
     vNormal=normalize(hmColor.gba-vec3(0.5,0.5,0.));
     vFog =  1.-smoothstep(fogDmin, fogDmax, length(posScene.xyz));
+    vHeight = smoothstep(0.2, 0.5, pos.z);
 }

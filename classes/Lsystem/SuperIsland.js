@@ -93,7 +93,7 @@ var SuperIsland=(function() {
                     n++;
                 }
                 if (n>=100){
-                    console.log("SuperIsland error : to many collisions");
+                    console.log("SuperIsland warning : to many collisions");
                 }
                 centers.push([x,y]);
                 var centre=[
@@ -298,7 +298,7 @@ var SuperIsland=(function() {
                         sizePx : spec.sizePx,
                         width : spec.size,
                         height : spec.size,
-                        rain: 0.05
+                        rain: 0.001
                     });
             
                 }, //end compute
@@ -344,9 +344,13 @@ var SuperIsland=(function() {
                 
                 drawPhysics: function(){
                     lsystems.map(function(ls){
-                      //  ls.drawPhysics(_dt);
+                        ls.drawPhysics(_dt);
                     });
-                    _rivers.compute(_dt)
+                    
+                    //LOD for water simulation refresh
+                    if (VUE.distanceToCamera(spec.centre)<SETTINGS.islands.riversRefreshDistance) {
+                        _rivers.compute(_dt);
+                    }
                 },
                 
                 moveNodesAbove: function() { //used after heightmap computation to move nodes above the heightmap
