@@ -9,7 +9,7 @@ $NLSystemsMin=3; //min number of LSystems for 1 island (included)
 $NLSystemsMax=6; //max number of LSystems for 1 island (included)
 $inputFile='demo/alexa.csv';   //input CSV
 $outputFile='input/world.csv'; //output CSV
-$maxURL=50000;       //max URL extracted from input CSV.0 -> extract all
+$maxURL=0;       //max URL extracted from input CSV.0 -> extract all
 
 //get the CSV file downloaded from official Alexa website
 $csv=file_get_contents($inputFile);

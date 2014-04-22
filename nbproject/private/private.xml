@@ -5,7 +5,8 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/var/www/3dnews/chreage/purewebgl/world/buildInputDemo.php</file>
-            <file>file:/var/www/3dnews/chreage/purewebgl/world/buildOutput.php</file>
+            <file>file:/var/www/3dnews/chreage/purewebgl/world/demo/LSystem.php</file>
+            <file>file:/var/www/3dnews/chreage/purewebgl/php/favicons/crawler.php</file>
         </group>
     </open-files>
 </project-private>
