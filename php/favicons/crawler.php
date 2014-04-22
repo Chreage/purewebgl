@@ -9,7 +9,7 @@ header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 $csv=file_get_contents('../alexa/alexa.csv');
 $rows=explode("\n", $csv);
 
-$Nmax=200;
+$Nmax=0;
 $ATLASURL='favicons.png';
 $AVANCEMENTURL='avancement.txt';
 
@@ -23,7 +23,7 @@ $Y=0;
 
 ob_start();
 foreach ($rows as $row){
-    if ($N>$Nmax) break;
+    if ($N>$Nmax && $Nmax) break;
     
     //get URL
     $cols=explode(",", $row);
