@@ -5,9 +5,14 @@ var SETTINGS={
         LsystemNormalMap: false, //if true, display Lsystem normalmap and exit
         islandHeightMap: false,  //if true, display island heighmap and exit
         islandNormalMap: false,  //if true, display island normalmap and exit
-        hideSpheres :     true,   //if true, hide Spheres
+        hideSpheres :     false,   //if true, hide Spheres
         ErodeTexture:     false,  //if true, display Lsystem heighmap with erosion and exit
         noErosionLsystems: true,  //if true, do not erode Lsystems
+        noOctree:          false,   //if true, do not compute L-system octree
+        NnodesMax:         0,    //max spheres number. 0 to disable it
+        NnodesMaxPerLsystem:0,    //max nodes per lsystem. 0 to disable it
+        NislandsMax:       0,       //max islands number. 0 to disable it
+        NlsystemsMax:      0        //max lsystems per island. 0 to disable it
     },
     
     //mouse and keyboard
@@ -37,40 +42,38 @@ var SETTINGS={
     //show only nearest spheres
     culling: {
         NSpheres : 2000,    //total number of sphere to display on a simple rendering
-        NSpheresTextured: 400, //number of textured spheres
-        weightAlphaTol: 20, //spheres between weightmin and this weight are semi-transp
-        weightGCTol: 100,   //sphere with weight < weightmin-this value are unloaded
+        weightAlphaTol: 10, //spheres between weightmin and this weight are semi-transp
         weightNodeIncrease: 1.1, //used in Scene class in render loop to adjust weightmin. higher value -> reactivity but may be unstable
-        maxImageReqs: 30       //max number of simultaneous image requests
+        maxTextureDistance: 180, //load texture atlas only if center of the Lsystem is closer to the camera than this distance in world units
+	maxSpheresTextureAtlasReqs: 4 //max simultaneous texture atlas request for lsystems
     },
     
     //lsystems settings
     Lsystems : {
-        number: 5,        //number of L-systems
-        rank: 15,         //rank of each L-system
-        showGenDt: 800,   //at loading, show next generation after ... ms
+        world: "world/output/",        //Used only for autogen=false
+        faviconSizePx: 16,
         
-        scaleAdjust: 0.8, //scale factor of a sphere between 2 generations
-        scaleBranch: 6,   //scale of a branch at gen 0
-        angle: Math.PI/5,  //angle
+        showGenDt: 800,   //at loading, show next generation after ... ms. Used only for autogen=true
         
-        heightmapSizePx: 1024,                 //heightmap size in pixels. must be POT
+        heightmapSizePx: 512,                 //heightmap size in pixels. must be POT
         heightmapMargin: 4,                   //heightmap margin in world units
         hMax: 3,                              //max height of the Lsystem, excluding island height
-        heightMapGaussPatchSizePx: 512,        //size of a gauss patch in pixels. Must be POT
-        heightMapPatchSizePx: 70,  //50            //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
+        heightMapGaussPatchSizePx: 128,        //size of a gauss patch in pixels. Must be POT
+        heightMapPatchSizePx: 35,  //50            //max size of the gauss patch in pixels on the heightmap. Will be multiplied by the node radius
         heightMapPatchAlphaMin: 0.1,//0.05         //min alpha of a gauss patch. Must be between 0 (fully transparent) and 1 (opaque)
         heightMapPatchAlphaRandom: 0.1,      //random part of the gauss patch transparency.
-        heightMapPatchMaxGen:8,               //draw patch for L systems generation < this level
+        heightMapPatchMaxGen:6,               //draw patch for L systems generation < this level
         
         defaultTextureImageURL: "images/textures/pixelBlack.jpg",  //when there is no favicon, use this. must be POT
         textureColorURL:"images/textures/sand.png",                //for heightmap surface - must be POT
         textureNormalsURL :"images/textures/sand_normal.png",      //normal texture for previous texture. must match previous texture
         textureTileInWidth: 10,                                    //number of color texture repeatition in width
         
-        gridDistanceLodMin: 300,                                     //distance from the camera to the center of the grid from which grid is display with its minimum LOD
+        gridDistanceLodMin: 200,                                     //distance from the camera to the center of the grid from which grid is display with its minimum LOD
         erodeTexturesURL: ['images/textures/erosion/grandcan2.jpg'],  //list of erosion texture which will be randomly applied to Lsystem heightmaps (1 texture per heightmap)
-        riversRefreshDistance: 80                                   //refresh rivers system only if distance to camera is smaller than this distance
+        
+        enableRivers: false,
+        riversRefreshDistance: 40                                   //refresh rivers system only if distance to camera is smaller than this distance
         
     },
     
@@ -79,10 +82,10 @@ var SETTINGS={
         sizePx: 1024,                               //size in pixels of the heightmap of the island. must be POT
         size: 180,                                  //size of an island (length of a side) in world units
         hMax: 16,                                   //max height of the island
-        nPatch: 300,                                //number of gaussian patch applied to build the heightmap
-        patchSizeAvgPx: 600,                        //average size of a patch in pixels
-        patchSizeRandomPx: 400,                     //random delta size of a patch in pixels
-        patchGaussSizePx: 512,                      //size of a gaussian patch texture in pixel. must be POT
+        nPatch: 80,                                //number of gaussian patch applied to build the heightmap
+        patchSizeAvgPx: 400,                        //average size of a patch in pixels
+        patchSizeRandomPx: 300,                     //random delta size of a patch in pixels
+        patchGaussSizePx: 256,                      //size of a gaussian patch texture in pixel. must be POT
         patchAlphaAvg: 0.005,                        //average transparency of a patch. 0->fully transparent, 1-> fully opaque
         patchAlphaRandom: 0.005,
         patchDistanceMaxRandom: 10,                  //distance max to add to the patch position
@@ -90,22 +93,23 @@ var SETTINGS={
         textureNormalsURL :"images/textures/sand_normal.png", //normal texture for previous texture. must match previous texture
         textureTileInWidth: 100,                                    //number of color texture repeatition in width
         vtOffset: 0.001,                                  //vertical positive offset of the island
-        collisionRadius: 45,                              //minimum distance between 2 Lsystems, in world units
-        collisionRadiusMargin: 40,                        //minimum distance between a Lsystem and the border of the island, in world units
-        centerExclusionRadius: 60,                         //minimum distance between the center of a Lsystem and the center of the island
-        patchExclusionRadius: 10,                            //minimum distance between the center of a Lsystem and a patch
+        collisionRadius: 25,                              //minimum distance between 2 Lsystems, in world units
+        collisionRadiusMargin: 35,                        //minimum distance between a Lsystem and the border of the island, in world units
+        centerExclusionRadius: 35,                         //minimum distance between the center of a Lsystem and the center of the island
+        patchExclusionRadius: 8,                            //minimum distance between the center of a Lsystem and a patch
         mountainTexturesURL: ['images/textures/erosion/mountain1024.png'],  //list of mountain heightmaps which will be randomly applied to the island heightmap
         
         
-        gridDistanceLodMin: 400,                        //distance from the camera to the center of the grid from which grid is display with its minimum LOD
-        hideDistance: 500,                              //do not draw the island if it is more distant than this distance
-        riversRefreshDistance: 150                      //refresh rivers system only if distance to camera is smaller than this distance
+        gridDistanceLodMin: 200,                        //distance from the camera to the center of the grid from which grid is display with its minimum LOD
+        hideDistance: 250,                              //do not draw the island if it is more distant than this distance
+        enableRivers: false,                            //enable/disable rivers simulation
+        riversRefreshDistance: 100                      //refresh rivers system only if distance to camera is smaller than this distance
     },
     
     sphere: {
         zOffset: 1,     //vertical offset of a sphere, to avoid collision with the ground
-        nBands: 24,       //number of bands in a sphere mesh for LOD 0
-        nCrowns: 24,      //number of crowns in a sphere mesh for LOD 0
+        nBands: 32,       //number of bands in a sphere mesh for LOD 0
+        nCrowns: 32,      //number of crowns in a sphere mesh for LOD 0
         nLods: 4,          //number of LOD levels
         changeLodDWeight: 10,
         lodMinWeight: -200,
@@ -114,7 +118,7 @@ var SETTINGS={
     
     //works for super island grid and Lsystem grid
     grids: {
-       LOD0Size: 512, //size of the side at LOD0
+       LOD0Size: 400, //size of the grid at LOD0
        nLods: 6       //number of LOD levels
     },
     
@@ -125,7 +129,7 @@ var SETTINGS={
         ground : "images/textures/water/sand2.jpg", //texture used for ground refraction - must be POT
         refractionIndice: 1.5,
         depth : 3,
-        gridSize : 512,                            //water surface is a square with gridSize*gridSize points
+        gridSize : 400,                            //water surface is a square with gridSize*gridSize points
         dimension : 800,                          //size of the water surface
         curve : 5,                                 //spherical curve of the water surface
         color: [0.2, 0.5, 0.9, 1.0], //[0.1, 0.2, 0.2, 1.0],               //water color

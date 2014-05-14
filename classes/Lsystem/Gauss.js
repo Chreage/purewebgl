@@ -4,7 +4,23 @@
  */
 
 var Gauss=(function() {
+    var chreage_lsystemGaussTexture,
+        chreage_islandGaussTexture;
+        
+        
     var that={
+        initChreageTextures: function(gl) {
+            chreage_lsystemGaussTexture=that.get_gaussTexture(gl, SETTINGS.Lsystems.heightMapGaussPatchSizePx, true),
+            chreage_islandGaussTexture=that.get_gaussTexture(gl, SETTINGS.islands.patchGaussSizePx, true);
+        },
+        get_lsystemGaussTexture: function() {
+            return chreage_lsystemGaussTexture;
+        },
+        
+        get_islandGaussTexture: function() {
+            return chreage_islandGaussTexture;
+        },
+        
         get_gaussCanvas: function(n){
             var cv=document.createElement("canvas");
             cv.width=n, cv.height=n;
@@ -30,6 +46,7 @@ var Gauss=(function() {
             }
 
             ctx.putImageData(imageData,0,0);
+            delete(ctx);
             return cv;
         },
 
@@ -42,10 +59,11 @@ var Gauss=(function() {
             gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
             gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,gl.RGBA, (floatTexture)?gl.FLOAT:gl.UNSIGNED_BYTE, cv );
+            delete(cv);
             return texture;
         }
 
-    }
+    };
     return that;
 
 })();

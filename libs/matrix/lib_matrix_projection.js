@@ -10,8 +10,5 @@ var lib_matrix_projection={
             0, 0,         A, -1,
             0, 0,         B, 0
         ];
-    },
+    }
 };
-
-
-

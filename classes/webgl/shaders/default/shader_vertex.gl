@@ -1,11 +1,11 @@
-
-precision mediump float;
+precision highp float;
 
 attribute vec3 position;
 
 uniform vec3 centre, camera, lightDir;
 uniform float scale, hightLight;
 uniform mat4 matrice_vue, matrice_projection, matrice_objet;
+uniform vec2 uvOffset, uvWH;
 
 varying float vI;
 varying vec2 vUV;
@@ -21,8 +21,11 @@ void main(void) {
     vec3 reflected=reflect(incident, position);
     float k=(centre.z-pos.z)/refracted.z;              //M,k so as M=P + k * refracted belongs to (Centrexz)
     vec3 M = ((pos.xyz + k*refracted)-centre)/scale;  
-    vUV=vec2(0.5,0.5)+5.*(M.xy*0.5);
+    vec2 glassUV=vec2(0.5,0.5)+5.*(M.xy*0.5);
     
+    vUV=clamp(glassUV,0.00001,0.99999)*uvWH+uvOffset;
+    
+
     //compute lighting
     vI=(0.6+0.5*hightLight);                                //mouseover hightlighting 
     vI*=0.8+0.3*max(dot(position, lightDir),0.);            //diffuse

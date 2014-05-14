@@ -1,6 +1,8 @@
-- chopper ttes les favicon et les grouper dans des texture atlas
-- positionnement des L systems en backoffice (donner indice du lsystem, indice du texture atlas, UV, position du lsystem)
+-runner word/*.php
+- ajouter systeme dechargement de texture
+- positionnement des iles en BO
+- retablir la flotte
+
 - shader saturation
 - effet d'approche/detection collision heightmap
 - socle des spheres
-- AO sur heightmaps des Lsystems

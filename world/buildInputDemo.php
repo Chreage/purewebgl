@@ -4,9 +4,9 @@ header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 
 //PARAMETERS
-$NIslands=10;    //number of islands
-$NLSystemsMin=3; //min number of LSystems for 1 island (included)
-$NLSystemsMax=6; //max number of LSystems for 1 island (included)
+$NIslands=128;    //number of islands
+$NLSystemsMin=4; //min number of LSystems for 1 island (included)
+$NLSystemsMax=8; //max number of LSystems for 1 island (included)
 $inputFile='demo/alexa.csv';   //input CSV
 $outputFile='input/world.csv'; //output CSV
 $maxURL=0;       //max URL extracted from input CSV.0 -> extract all

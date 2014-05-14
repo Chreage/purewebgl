@@ -28,6 +28,10 @@ var Texture=(function () {
             return defaultTexture;
         },
         
+        bind_default: function() {
+            GL.bindTexture(GL.TEXTURE_2D, defaultTexture);
+        },
+        
         instance: function(spec) {
            var loaded=false,
                texture=GL.createTexture(),
@@ -45,15 +49,15 @@ var Texture=(function () {
                     GL.bindTexture(GL.TEXTURE_2D, null);
                     loaded=true;
                     if (spec.onload) spec.onload();
+                    delete(image);
            };
            image.onload=function() { load(); };
 
             var that={
                    is_loaded: function() { return loaded; },
                    draw: function() {
-                       if (!loaded) return false;
+                       if (!loaded) return;
                        GL.bindTexture(GL.TEXTURE_2D, texture);
-                       return true;
                    }
             };
             return that;

@@ -32,12 +32,16 @@ var Sphere=(function() {
                 if (c===0 || c===couronnes) continue; //premiere ou derniere couronne
 
             }
-            return Objet.instance({
+            var that = Objet.instance({
                     texture: spec.texture,
                     maillage: Maillage.instance({
                     vertices: vertices,
                     indices: indices
             })});
+            delete(vertices),
+            delete(indices);
+            
+            return that;
         }
     };
 })();

@@ -26,6 +26,8 @@
  * spec.scaleUV : number of color/normal texture tiles
  * spec.mountainTexturesSet : texture collection of mountain heightmaps
  * 
+ * spec.number : number of the island
+ * 
  */
 var SuperIsland=(function() {
     var debug={
@@ -57,27 +59,28 @@ var SuperIsland=(function() {
             spec.scaleUV = spec.scaleUV || SETTINGS.islands.textureTileInWidth;
             
     
-            var matrix=lib_matrix4.get_I4();
-            //lib_matrix_mv.set_position(matrix, spec.centre);
-            
-            var _gl=GL;
-            var lsystems=[];
+            var matrix=lib_matrix4.get_I4(),
+                _gl=GL,
+                lsystems=[];
  
             var colorTexture=Texture.instance({
                 url: spec.textureColorURL || SETTINGS.islands.textureColorURL
-            });
-            var normalsTexture=Texture.instance({
+            }),
+                normalsTexture=Texture.instance({
                 url: spec.textureNormalsURL || SETTINGS.islands.textureNormalsURL
-            });
-            var scaleSurface = [spec.size, spec.size];
-            var centre2d=[spec.centre[0]-spec.size/2,spec.centre[1]-spec.size/2]
+            }),
+                scaleSurface = [spec.size, spec.size],
+                centre2d=[spec.centre[0]-spec.size/2,spec.centre[1]-spec.size/2],
             
             //build Lsystems
-            var centers=[],
+                centers=[],
                 scaleIsland=[],
                 offsetIsland=[];
         
-            spec.Lsystems.map(function(lspec){
+            spec.Lsystems.map(function(lspec, index){
+                if (SETTINGS.debug.NlsystemsMax && index>=SETTINGS.debug.NlsystemsMax) return;
+                
+                
                 //choose position
                 var i,x,y,dx,dy,collide=true,n=0,xNorm,yNorm;
                 var dxCenter, dyCenter;
@@ -115,8 +118,13 @@ var SuperIsland=(function() {
                     spec.centre[2]-SETTINGS.islands.vtOffset]; //offset Z to avoid flickering
                 
                 //create Lsystem
-                lspec.centre=centre;
-                var lsystem=Lsystem.instance(lspec);
+                var lsystem=Lsystem.instance({
+                    nodes: lspec,
+                    centre: centre,
+                    islandNumber: spec.number,
+                    lsystemNumber: index
+                });
+                
                 if (STOP) return false;
                 lsystems.push(lsystem);
                 LSYSTEMS.push(lsystem);
@@ -141,7 +149,8 @@ var SuperIsland=(function() {
                 
                 
             //get gauss texture as floatTexture
-            var islandGaussTexture=Gauss.get_gaussTexture(_gl, spec.patchGaussSizePx, true);
+            //var islandGaussTexture=Gauss.get_gaussTexture(_gl, spec.patchGaussSizePx, true);
+            var islandGaussTexture=Gauss.get_islandGaussTexture();
              
             //create island heightmap texture
             var islandHeightMapTexture=_gl.createTexture();
@@ -191,14 +200,7 @@ var SuperIsland=(function() {
                     0,1,2, 0,2,3
                 ]
             });
-            
-            //build grid
-            /* var grid=Grid.instance({
-                x:512,
-                y:512
-            });*/
-            
-            
+                        
             var drawLsystem=function(lsystem, index){
                 Shaders.set_heightMapSurface_shaders();
                 Shaders.set_island_heightMapSurface(spec.hMax, scaleIsland[index], offsetIsland[index]);
@@ -208,7 +210,7 @@ var SuperIsland=(function() {
                 lsystem.draw();
             };
             
-            var _rivers=false;
+            var _rivers=false, _riversEnabled=false;
             
             var that={
                 compute: function(){
@@ -313,17 +315,21 @@ var SuperIsland=(function() {
                     _gl.generateMipmap(_gl.TEXTURE_2D);
                     _gl.bindTexture(_gl.TEXTURE_2D, null);
                     
-                    _rivers=RiverSystem.instance({
-                        heightMapTexture :  islandNormalMapTexture,
-                        hMax : spec.hMax,
-                        sizePx : spec.sizePx,
-                        width : spec.size,
-                        height : spec.size,
-                        rain: 0.00001,
-                        gravity: 4,
-                        waterHMax: 3
-                    });
-            
+                    if (SETTINGS.islands.enableRivers) {
+                        _rivers=RiverSystem.instance({
+                            heightMapTexture :  islandNormalMapTexture,
+                            hMax : spec.hMax,
+                            simuSizePx : spec.sizePx,
+                            width : spec.size,
+                            height : spec.size,
+                            rain: 0.00001,
+                            nPass: 1,
+                            gravity: 4,
+                            waterHMax: 3,
+                            avgStabilizationCoeff: 0.1
+                        });
+                        _riversEnabled=true;
+                    } //end if enableRivers
                 }, //end compute
                 
                 //draw in the render loop
@@ -334,7 +340,7 @@ var SuperIsland=(function() {
                      
                      //DRAW SUPER ISLAND
                      Shaders.set_islandHeightMapSurface_shaders();
-                     Shaders.set_fog_islandHeightMapSurface(SETTINGS.fog.dMin, SETTINGS.fog.dMax, SETTINGS.fog.color)
+                     Shaders.set_fog_islandHeightMapSurface(SETTINGS.fog.dMin, SETTINGS.fog.dMax, SETTINGS.fog.color);
                      VUE.drawIslandHeightMapSurface();
                 
                      Shaders.set_hMax_islandHeightMapSurface(spec.hMax);
@@ -347,7 +353,7 @@ var SuperIsland=(function() {
                     _gl.activeTexture(_gl.TEXTURE2);
                     normalsTexture.draw();
                     _gl.activeTexture(_gl.TEXTURE3);
-                    if (_rivers) _rivers.draw();
+                    if (_riversEnabled) _rivers.draw();
                     _gl.activeTexture(_gl.TEXTURE0);
                     colorTexture.draw();
                     
@@ -371,7 +377,7 @@ var SuperIsland=(function() {
                     });
                     
                     //LOD for water simulation refresh
-                    if (VUE.distanceToCamera(spec.centre)<SETTINGS.islands.riversRefreshDistance) {
+                    if (_riversEnabled && VUE.distanceToCamera(spec.centre)<SETTINGS.islands.riversRefreshDistance) {
                         _rivers.compute(_dt);
                     }
                 },
@@ -411,7 +417,7 @@ var SuperIsland=(function() {
                             //get the pixel index on the readpixel data
                             var i=xPx+spec.sizePx*yPx;
                             return _pixelsBuffer[4*i]; //red channel -> height
-                        }
+                        };
                         
                         nodes.map(function(node){ //move node
                             //compute x,y in texture UV (between 0 and 1)
@@ -472,7 +478,7 @@ var SuperIsland=(function() {
                      
                      lsystems.map(moveLsystem);
                      
-                     
+                     delete(_pixelsBuffer);
                 } //end moveNodesAbove
                 
                 
@@ -482,12 +488,10 @@ var SuperIsland=(function() {
             if (!debug.islandHeightMap && !debug.islandNormalMap){
                 that.moveNodesAbove();
             }
+            delete(spec.Lsystems);
+            
             return that;
             
         } //end instance
-        
     };
-    
-    
 })();
-

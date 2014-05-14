@@ -83,4 +83,3 @@ var lib_vector={
         return [u[0]+a*v[0], u[1]+a*v[1], u[2]+a*v[2]];
     }
 };
-

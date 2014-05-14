@@ -14,8 +14,9 @@ var LodSpheres=(function() {
             Nlods=SETTINGS.sphere.nLods;
             var i, nBands, nCrowns;
             for (i=1; i<=Nlods; i++){
-                nBands=SETTINGS.sphere.nBands/i,
-                nCrowns=SETTINGS.sphere.nCrowns/i;
+                nBands=Math.round(SETTINGS.sphere.nBands/i),
+                nCrowns=Math.round(SETTINGS.sphere.nCrowns/i);
+                console.log('mathis', nBands, nCrowns);
                 spheres.push(
                         Sphere.instance({
                             centre: [0,0,0],
@@ -51,6 +52,7 @@ var LodSpheres=(function() {
                 scale=node.scale;
                 Shaders.set_scale(scale);
             }
+            //console.log('draw sphere');
             spheres[currentLod].drawInstance(node.position);
         }
         

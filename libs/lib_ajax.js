@@ -3,10 +3,11 @@ var lib_ajax={
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.open("GET", url, true);
         xmlHttp.onreadystatechange = function() {
-            if (xmlHttp.readyState == 4 && xmlHttp.status==200) {
+            if (xmlHttp.readyState === 4 && xmlHttp.status===200) {
                 func(xmlHttp.responseText);   // la fonction de prise en charge
+                xmlHttp=null;
             }
-        }
+        };
         xmlHttp.send();
     }
 };

@@ -26,7 +26,8 @@ var Heightmap=(function() {
             var nGauss=SETTINGS.Lsystems.heightMapGaussPatchSizePx;
             _initialized=true;
             
-            _gaussTexture=Gauss.get_gaussTexture(_gl, nGauss, true);
+            //_gaussTexture=Gauss.get_gaussTexture(_gl, nGauss, true);
+            _gaussTexture=Gauss.get_lsystemGaussTexture();
            //setup gaussian patch (textured with gaussTetxure)
             _gaussianPatchVBO=VBO.instance({
                 tableau_js: [
@@ -268,10 +269,12 @@ var Heightmap=(function() {
 
                      };
                      
+                     
                      spec.nodes.map(moveNode);
                      spec.AABB.zMax+=hMaxAABB,
                      spec.AABB.zMin+=hMinAABB;
                      _gl.clearColor(1.,1.,1.,1.);
+                     delete(_pixelsBuffer);
                 }
                 
             };

@@ -12,6 +12,7 @@ var VBO_indices=(function() {
 	  		   (spec.int32Indices)?new Uint32Array(spec.tableau_js):new Uint16Array(spec.tableau_js),
 			  GL.STATIC_DRAW);
             var taille=spec.tableau_js.length;
+            delete(spec.tableau_js);
             return {
                 draw: function() {
                    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, vbo);

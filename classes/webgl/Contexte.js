@@ -4,22 +4,15 @@
 var GL, CV, CURRENTGEN=0, LSYSTEMS=[];
 var EXT_FLOAT, EXT_FLOAT2, EXT_UINT, EXT_FLOAT_LINEAR;
 
-var NNODESDISPLAYEDMAX=SETTINGS.culling.NSpheres,
-    NNODESTEXTUREDDISPLAYEDMAX=SETTINGS.culling.NSpheresTextured;
+var NNODESDISPLAYEDMAX=SETTINGS.culling.NSpheres;
         
 var NNODES=0;
 var WEIGHTNODEMIN=-165;
-var WEIGHTNODETEXTUREDMIN=-150;
 
 var WEIGHTALPHATOL=SETTINGS.culling.weightAlphaTol;
-var WEIGHTGCTOL=SETTINGS.culling.weightGCTol;
 var WEIGHTNODEINCREASE=SETTINGS.culling.weightNodeIncrease;
 
-var NNODESDISPLAYED=0,
-    NNODESTEXTUREDDISPLAYED=0;
-
-var MAXIMAGEREQS=SETTINGS.culling.maxImageReqs,
-    NIMAGEREQS=0;
+var NNODESDISPLAYED=0;
 
 var ERODETEXTURESSET, MOUNTAINTEXTURESSET, ALEXADATA=false, STOP=false;
 
@@ -72,6 +65,7 @@ var Contexte=(function() {
             RiverSystem.init(GL);
             Heightmap.init(GL);
             ErodeTexturesSet.init();
+            Gauss.initChreageTextures(GL);
             
             var scene=Scene.instance({});
             var shaders=Shaders.instance({});
@@ -87,68 +81,47 @@ var Contexte=(function() {
             nav.set();
             scene.set_navigation(nav);
 
-            var N=SETTINGS.Lsystems.number; //number of Lsystems
-            var n=SETTINGS.Lsystems.rank; //rank of 1 lsystem
-
             var checkLoaded=function() {
                 nLoaded++;
                 if (nLoaded!==3) return;
-                
+                nLoaded=0;
                 
                 var dataObj=JSON.parse(ALEXADATA);
-                var alexa=dataObj.alexa;
-                /*
-                var specs=[], specs2=[];
-                for (var i=0; i<N; i++){
-                    specs.push({nGenerations: n, list: alexa, offset: 2*i, gap: 2*N});
-                    specs2.push({nGenerations: n, list: alexa, offset: 2*i+1, gap: 2*N});
-                }
-
-                var myIsland=SuperIsland.instance({
-                    Lsystems: specs,
-                    centre: [90,0,0],
-                    LsystemRadius: 25,
-                    size: 160
-                });
-
-                scene.add_island(myIsland);
-
-                var myIsland2=SuperIsland.instance({
-                    Lsystems: specs2,
-                    centre: [-90,0,0],
-                    LsystemRadius: 25,
-                    size: 160
-                });
-
-                scene.add_island(myIsland2);
-
-                */
-                var myIsland=SuperIsland.instance({
-                    Lsystems: [{nGenerations: n, list: alexa, offset: 0, gap: N},
-                               {nGenerations: n, list: alexa, offset: 1, gap: N},
-                               {nGenerations: n, list: alexa, offset: 2, gap: N},
-                               {nGenerations: n, list: alexa, offset: 3, gap: N}],
-                    centre: [0,0,0],
-                    LsystemRadius: SETTINGS.islands.collisionRadius,
-                    LsystemRadiusMargin: SETTINGS.islands.collisionRadiusMargin,
-                    size: SETTINGS.islands.size,
-                    mountainTexturesSet: MOUNTAINTEXTURESSET
-                    //mountainHeightMapURL: lib_array.get_random(SETTINGS.islands.mountainTexturesURL)
-                }); 
-                scene.add_island(myIsland);
-
-                scene.start();
-
+                //var alexa=dataObj.alexa;
+                var angle=0, radius=700;
+                dataObj.islands.map(function(island, index){
+                    if (SETTINGS.debug.NislandsMax && index>=SETTINGS.debug.NislandsMax) return;
+                    if (SETTINGS.debug.NlsystemsMax && island.lsystems.length>SETTINGS.debug.NlsystemsMax) {
+                        island.lsystems=island.lsystems.slice(0,SETTINGS.debug.NlsystemsMax);
+                    }
+                
+                    angle+=2*Math.PI/5, radius-=30;
+                    var builtIsland=SuperIsland.instance({
+                        number: index,
+                        Lsystems: island.lsystems,
+                        centre: [radius*Math.cos(angle),radius*Math.sin(angle),0],
+                        LsystemRadius: SETTINGS.islands.collisionRadius,
+                        LsystemRadiusMargin: SETTINGS.islands.collisionRadiusMargin,
+                        size: SETTINGS.islands.size,
+                        mountainTexturesSet: MOUNTAINTEXTURESSET
+                    }); 
+                    scene.add_island(builtIsland);
+                }); //end islands map
+                
+		delete(dataObj);
+		delete(ALEXADATA);
+                setTimeout(scene.start, 100);
+		
                 var showGen=function() {
                     CURRENTGEN++;
                     if (CURRENTGEN>20) clearInterval(timerGen);
                 };
                 var timerGen=setInterval(showGen, SETTINGS.Lsystems.showGenDt);
-                //}); //end ajax get
+                
 
              }; //end checkLoaded()
-             
-             lib_ajax.get("php/alexa/alexa.json", function(data){
+            
+             lib_ajax.get(SETTINGS.Lsystems.world+'json/world.json', function(data){
                  ALEXADATA=data;
                  checkLoaded();
              });

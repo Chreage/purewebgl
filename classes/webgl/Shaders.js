@@ -1,5 +1,6 @@
 /*
  * spec: empty
+ * this file is included via Shaders.php, which put GLSL source as strings
  */
 var Shaders=(function (){
 
@@ -152,6 +153,7 @@ var Shaders=(function (){
         matrice_projection,
         matrice_objet,
         scale, centre,hightLight,
+        textureIconUV, iconUV,
         position,
         camera,
         lightDir,
@@ -281,6 +283,8 @@ var Shaders=(function (){
             scale=GL.getUniformLocation(shader_program, "scale");
             centre=GL.getUniformLocation(shader_program, "centre");
             hightLight=GL.getUniformLocation(shader_program, "hightLight");
+            textureIconUV=GL.getUniformLocation(shader_program, "uvWH");
+            iconUV=GL.getUniformLocation(shader_program, "uvOffset");
             alpha=GL.getUniformLocation(shader_program, "alpha");
             lightDir=GL.getUniformLocation(shader_program, "lightDir");
 
@@ -311,6 +315,12 @@ var Shaders=(function (){
         },
         set_hightLight: function(hl){
             GL.uniform1f(hightLight, hl);
+        },
+        set_textureIconUV: function(uv){
+            GL.uniform2fv(textureIconUV, uv);
+        },
+        set_iconUV: function(uv){
+            GL.uniform2fv(iconUV, uv);
         },
         set_defaultShader: function() {
             GL.useProgram(shader_program);

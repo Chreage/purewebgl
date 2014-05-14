@@ -42,12 +42,12 @@ var lib_intersect={
         for (i=0; i<A.length; i++) {
             xA.push(this.abscisse_point_axis(RP, Ru, A[i]));
         }
-        xA.sort(function(a,b) {return a-b});
+        xA.sort(function(a,b) {return a-b;});
 
         for (i=0; i<B.length; i++) {
             xB.push(this.abscisse_point_axis(RP, Ru, B[i]));
         }
-        xB.sort(function(a,b) {return a-b});
+        xB.sort(function(a,b) {return a-b;});
         
         if((xA[0]>xB[xB.length-1]) || (xA[xA.length-1]<xB[0])) {            
             r=false;
@@ -163,7 +163,7 @@ var lib_intersect={
             P[1]*u[2]-P[2]*u[1],
             -u[2],
             u[1]
-        ]
+        ];
     },
 
     /*
@@ -210,7 +210,7 @@ var lib_intersect={
 
         var k_num=lib_vector.det(AP,AB,AC),
             k_denom=lib_vector.det(u,AB,AC);
-        if (k_denom==0) return false;
+        if (k_denom===0) return false;
         var k=-k_num/k_denom;
         if (k>0) return false;
         return {I: lib_vector.fmaNew(P, u, k), d: -k, T:T, face:face};
@@ -236,7 +236,7 @@ var lib_intersect={
         return [this.plucker_vecteur(A,B),
                 this.plucker_vecteur(B,C),
                 this.plucker_vecteur(C,A)
-        ]
+        ];
     },
 
     /*
@@ -248,7 +248,7 @@ var lib_intersect={
                 this.plucker_vecteur(B,C),
                 this.plucker_vecteur(C,D),
                 this.plucker_vecteur(D,A)
-        ]
+        ];
     },
 
     /*
@@ -270,7 +270,7 @@ var lib_intersect={
             this.plucker_quad(A,D,G,F),
             this.plucker_quad(A,B,F,E),
             this.plucker_quad(D,C,G,H)
-        ]
+        ];
     },
 
     /*

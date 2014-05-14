@@ -1,4 +1,4 @@
-if ( !window.requestAnimationFrame ) {
+/*if ( !window.requestAnimationFrame ) {
 
 	window.requestAnimationFrame = ( function() {
 
@@ -22,6 +22,6 @@ if ( !window.cancelRequestAnimationFrame ) {
 
 	} )();
 
-};
+};*/
 
 

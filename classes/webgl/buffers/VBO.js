@@ -9,6 +9,8 @@ var VBO=(function() {
             GL.bufferData(GL.ARRAY_BUFFER,
 	  		  new Float32Array(spec.tableau_js),
 			  GL.STATIC_DRAW);
+            delete(spec.tableau_js);
+            
             return {
                 draw: function() { //for default rendering (nodes)             
                    GL.bindBuffer(GL.ARRAY_BUFFER, vbo) ;

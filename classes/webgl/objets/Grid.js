@@ -29,10 +29,13 @@ var Grid=(function() {
                 maillage: Maillage.instance({
                     vertices: vertices,
                     indices: indices,
-                    int32Indices: true
+                    int32Indices: (indices.length>65000)
                 })
             });
            
+            delete(vertices),
+            delete(indices);
+            
             return that;
         }
     };

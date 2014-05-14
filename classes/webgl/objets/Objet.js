@@ -59,6 +59,6 @@ var Objet=(function() {
             };
             return that;
         }
-    }
+    };
 })();
 

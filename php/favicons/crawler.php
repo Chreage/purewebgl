@@ -62,3 +62,4 @@ imagedestroy($imAtlas);
 
 chmod($imAtlas, 0777);
 @unlink($AVANCEMENTURL);
+ob_end_flush();

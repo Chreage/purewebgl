@@ -1,8 +1,24 @@
 precision highp float;
 
+
+uniform float dx, dy, avgStabilizationCoeff;
 uniform sampler2D sampler;
 varying vec2 vUV; 
 
 void main(void) {
-    gl_FragColor=texture2D(sampler, vUV);
-} 
+        vec4 waterData=texture2D(sampler, vUV);
+
+        vec4 waterDataAvg=(texture2D(sampler, vUV+vec2(dx,0.))
+                  +.5*texture2D(sampler, vUV+vec2(dx,dy))
+                  +texture2D(sampler, vUV+vec2(0.,dy))
+                  +.5*texture2D(sampler, vUV+vec2(-dx,dy))
+                  +texture2D(sampler, vUV+vec2(-dx,0.))
+                  +.5*texture2D(sampler, vUV+vec2(-dx,-dy))
+                  +texture2D(sampler, vUV+vec2(0.,-dy))
+                  +.5*texture2D(sampler, vUV+vec2(dx,-dy)))/6.;
+
+
+       vec4 waterMixed=mix(waterData, waterDataAvg, avgStabilizationCoeff);
+
+      gl_FragColor=vec4(waterData.r, waterMixed.gb, 1.);
+}     

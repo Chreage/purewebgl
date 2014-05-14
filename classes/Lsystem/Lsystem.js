@@ -1,49 +1,22 @@
 /*
  * Create a Lsystem
  * spec.centre : vec3 array - centre
- * spec.nGenerations : int - number of generations
- * spec.list : list of items - string array
- * spec.gap : gap between 2 items in spec.list
- * spec.offset : item offset - must be < spec.gap
- * spec.defaultImage : url of the default texture image
+ * spec.islandNumber : number of the island
+ * spec.lsystemNumber : number of the lsystem
  */
 var Lsystem=(function() {
-	var ScaleAdjust = SETTINGS.Lsystems.scaleAdjust,
-            ScaleBranch = SETTINGS.Lsystems.scaleBranch,
-            RotateZ = SETTINGS.Lsystems.angle;
-
-	function createNode(nGeneration, position, scale, label, AABB){
-            NNODES++;
-            
-            AABB.xMax=Math.max(AABB.xMax, position[0]+scale),
-            AABB.xMin=Math.min(AABB.xMin, position[0]+scale),
-            AABB.yMax=Math.max(AABB.yMax, position[1]+scale),
-            AABB.yMin=Math.min(AABB.yMin, position[1]+scale),
-            AABB.zMax=Math.max(AABB.zMax, position[2]+scale),
-            AABB.zMin=Math.min(AABB.zMin, position[2]+scale);
-
-            return {
-                scale: scale,
-                children: [],
-                generation: nGeneration,
-                position: position,
-                highlight: 0,
-                label: label,
-                imageAvailable: true,
-                textureLoaded: false,
-                imageBusy: false,
-                image: false,
-                texture: false,
-                weight: 0,
-                alpha: 1
-            };
-	}
-
+     var __NimageReqs=0;
+     
      return {
          instance: function(spec){
-            var nodes=[];
-            var maxGeneration	= spec.nGenerations || 10;
-            var curs=spec.offset; //cursor in the label list
+            var _nodes=[], //nodes array
+                _textureLoaded=false,
+                _textureLoading=false,
+                _textureWidth,
+                _textureHeight,
+                _textureIconUV=[.5,.5],
+                _texture=false,
+                _draw=false;
 
             //bounding box - used to compute octree
             var AABB={
@@ -53,54 +26,42 @@ var Lsystem=(function() {
                 yMin: 1e12,
                 zMax: -1e12,
                 zMin: 1e12
-            }
+            };
             
-            //create first node :
-            var firstGeneration	= createNode(0, spec.centre || [0,0,0], 1, spec.list[curs], AABB);
-            nodes.push(firstGeneration);
+            spec.nodes.map(function(node, index){
+                if (SETTINGS.debug.NnodesMaxPerLsystem && index>SETTINGS.debug.NnodesMaxPerLsystem) return;
+                var generation=parseInt(node.p);
+                var scale=Math.pow((13-generation)/13,2);
+                
+                var position=[
+                    parseFloat(node.x)+spec.centre[0],
+                    parseFloat(node.y)+spec.centre[1],
+                    SETTINGS.Lsystems.hMax*scale+spec.centre[2]
+                ];
+                
+                if (SETTINGS.debug.NnodesMax && NNODES>SETTINGS.debug.NnodesMax) return;
+                NNODES++;
+                
+                AABB.xMax=Math.max(AABB.xMax, position[0]+scale),
+                AABB.xMin=Math.min(AABB.xMin, position[0]+scale),
+                AABB.yMax=Math.max(AABB.yMax, position[1]+scale),
+                AABB.yMin=Math.min(AABB.yMin, position[1]+scale),
+                AABB.zMax=Math.max(AABB.zMax, position[2]+scale),
+                AABB.zMin=Math.min(AABB.zMin, position[2]+scale);
 
-            function computerNextGeneration(){           
-                nodes.map(function(node){
-                    if (node.children.length) return;
-                   
-                    //node has no children -> create children
-                    var angle=node.generation*RotateZ;
-                    var cRotateZ=Math.cos(angle),
-                        sRotateZ=Math.sin(angle);
-
-                    var n=node.generation+1,
-                        sc=node.scale*ScaleAdjust;
-
-                    //build first child
-                    curs+=spec.gap;
-                    if (curs>spec.list.length) return;
-
-                    var x=node.position[0]+sc*ScaleBranch*sRotateZ,
-                        y=node.position[1]+sc*ScaleBranch*cRotateZ,
-                        z=node.position[2];
-                    var child1	= createNode(node.generation+1, [x,y,z], sc, spec.list[curs], AABB);
-                    nodes.push(child1);
-
-                    //build second child
-                    curs+=spec.gap;
-                    if (curs>spec.list.length) return;
-                    
-                    x=node.position[0]-sc*ScaleBranch*sRotateZ,
-                    y=node.position[1]-sc*ScaleBranch*cRotateZ,
-                    z=node.position[2];
-
-                    var child2	= createNode(node.generation+1, [x,y,z], sc, spec.list[curs], AABB);
-                    
-                    node.children=[nodes.length, nodes.length+1];
-                    nodes.push(child2);
+                _nodes.push({
+                    scale: scale,
+                    generation: generation,
+                    position: position,
+                    highlight: 0,
+                    label: node.url,
+                    uv: [parseFloat(node.u), parseFloat(node.v)],
+                    weight: 0,
+                    alpha: 1
                 });
-            } //end computeNextGeneration
-
-            var nGeneration;
-            for(nGeneration = 1; nGeneration < maxGeneration; nGeneration++){
-                 computerNextGeneration();                   
-            }
-
+            });
+            
+            delete(spec.nodes);
             
             //compute heightMap
             var heightmapSurface=HeightmapSurface.instance({
@@ -108,7 +69,7 @@ var Lsystem=(function() {
                 size: SETTINGS.Lsystems.heightmapSizePx,
                 margin: SETTINGS.Lsystems.heightmapMargin,
                 gl: GL,
-                nodes: nodes,
+                nodes: _nodes,
                 hMax: SETTINGS.Lsystems.hMax,
                 centre: spec.centre,
                 erodeTexturesSet: ERODETEXTURESSET
@@ -120,50 +81,14 @@ var Lsystem=(function() {
             //compute octree
             var octree=false;
             
-            var defaultTextureBinded=false;
+          //  var defaultTextureBinded=false;
             var alpha=-1;
             
             var drawNode=function(node){
+                if (node.alpha<0) return;
                 //if (node.weight<WEIGHTNODEMIN) return;
                 NNODESDISPLAYED++;
-                if (NIMAGEREQS<MAXIMAGEREQS && !node.imageBusy && node.imageAvailable && !node.textureLoaded && node.weight>WEIGHTNODETEXTUREDMIN){
-                    //request texture
-                    node.imageBusy=true,
-                    node.image=new Image();
-                    node.image.onload=function(event) {
-                        node.imageAvailable=true;
-                        node.imageBusy=false;
-                        node.texture=GL.createTexture();
-                        GL.bindTexture(GL.TEXTURE_2D, node.texture);
-                        GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, node.image);
-                        GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE );
-                        GL.texParameteri( GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE );
-                        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
-                        GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST_MIPMAP_LINEAR);
-                        GL.generateMipmap(GL.TEXTURE_2D);
-                        GL.bindTexture(GL.TEXTURE_2D, null);
-                        node.textureLoaded=true;
-                        node.image=null;
-                        NIMAGEREQS--;
-                    }
-                    node.image.onerror=function(event){
-                        node.imageAvailable=false;
-                        node.imageBusy=false;
-                        NIMAGEREQS--;
-                    }
-                    node.image.src='php/favicons/favicons/'+node.label.replace(/\./g, '_')+'.png';
-                    console.log("get ", node.image.src);
-                    NIMAGEREQS++;
-                } //end sphere texture request
-                if (node.textureLoaded) {
-                     NNODESTEXTUREDDISPLAYED++;
-                     GL.bindTexture(GL.TEXTURE_2D, node.texture);
-                     defaultTextureBinded=false;
-                } else if (!defaultTextureBinded){
-                     GL.bindTexture(GL.TEXTURE_2D, Texture.get_default());
-                     defaultTextureBinded=true;
-                }
-               
+
                 if (node.generation<CURRENTGEN) {
                     Shaders.set_hightLight(node.highlight);
                     if (node.alpha!==alpha)
@@ -172,6 +97,7 @@ var Lsystem=(function() {
                         alpha=node.alpha;
                     }
                    // if (node.alpha<1) node.alpha+=0.01;
+                    if (_draw) Shaders.set_iconUV(node.uv);
                     LodSpheres.draw(node);
                 }
             };
@@ -192,7 +118,7 @@ var Lsystem=(function() {
                     return AABB.zMax-AABB.zMin;
                 },
                 get_nodes: function() {
-                    return nodes;
+                    return _nodes;
                 },
                 get_AABB: function(){
                     return AABB;
@@ -200,10 +126,12 @@ var Lsystem=(function() {
                 
                 //COMPUTERS
                 computeOctree: function(){
-                    octree=Octree.instance({
-                        AABB: AABB,
-                        nodes: nodes
-                    });
+                    if (!SETTINGS.debug.noOctree){
+                        octree=Octree.instance({
+                            AABB: AABB,
+                            nodes: _nodes
+                        });
+                    }
                 },
                 
                 //DYNAMIC METHODS
@@ -214,22 +142,64 @@ var Lsystem=(function() {
                     
                     //draw Spheres
                     if (SETTINGS.debug.hideSpheres) return;
-                    Shaders.set_defaultShader();
-                    LodSpheres.reset();
-                    defaultTextureBinded=false;
+                    
+                    
+                    if (!_textureLoaded && !_textureLoading && __NimageReqs<SETTINGS.culling.maxSpheresTextureAtlasReqs && VUE.distanceToCamera(spec.centre)<SETTINGS.culling.maxTextureDistance) {
+                        _textureLoading=true,
+		        __NimageReqs++;
+                        var textureImage=new Image();
+                        textureImage.onload=function() {
+			    __NimageReqs--;
+                            _textureLoading=false,
+                            _textureLoaded=true,
+                            _texture=GL.createTexture(),
+                            _textureWidth=textureImage.width,
+                            _textureHeight=textureImage.height;
+                    
+                            GL.bindTexture(GL.TEXTURE_2D, _texture);
+                            GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+                            GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST_MIPMAP_LINEAR);
+                            GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, false);
+                            GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, textureImage);
+                            GL.generateMipmap(GL.TEXTURE_2D);
+			    GL.bindTexture(GL.TEXTURE_2D, null);
+                            
+                            _textureIconUV[0]=SETTINGS.Lsystems.faviconSizePx/_textureWidth,
+                            _textureIconUV[1]=SETTINGS.Lsystems.faviconSizePx/_textureHeight;
+                            textureImage=null;
+                        };
+			var textureURL=SETTINGS.Lsystems.world+"textures/atlas_"+spec.islandNumber+"_"+spec.lsystemNumber+".jpg";
+			console.log("load texture ", textureURL);
+                        textureImage.src=textureURL;
+                    } else if (_textureLoaded) {
+                        _draw=true;
+                    } //end if textureLoaded
+                    
+                    //if (_draw) {
+                        //console.log('plapp');
+                        Shaders.set_defaultShader();
+                        LodSpheres.reset();
+                        GL.bindTexture(GL.TEXTURE_2D, (_draw)?_texture:Texture.get_default());
+
+                        Shaders.set_textureIconUV(_textureIconUV);
+                    //}
                     alpha=-1;
-                    
-                    for (var i=0; i<nodes.length; i++){
-                        if (nodes[i].weight<WEIGHTNODEMIN-WEIGHTALPHATOL) break;
-                        if (nodes[i].weight<WEIGHTNODEMIN){
-                            nodes[i].alpha=1-(WEIGHTNODEMIN-nodes[i].weight)/WEIGHTALPHATOL;
+
+                    var i, node;
+                    for (i=0; i<_nodes.length; i++){
+                        node=_nodes[i];
+                        if (node.weight<WEIGHTNODEMIN-WEIGHTALPHATOL) break;
+                        if (node.weight<WEIGHTNODEMIN){
+                            node.alpha=1-(WEIGHTNODEMIN-node.weight)/WEIGHTALPHATOL;
                         } else {
-                            nodes[i].alpha=1;
+                            node.alpha=1;
                         }
-                        drawNode(nodes[i]);
+                        drawNode(node);
                     } //end for nodes
-                    Shaders.unset_defaultShader();
                     
+                    //if (_draw) {
+                        Shaders.unset_defaultShader();
+                    //}
                 },
                 
                 drawPhysics: function(dt) {
@@ -246,23 +216,12 @@ var Lsystem=(function() {
 
                 sort: function(camera){
                     //refresh weight
-                    nodes.map(function(node){
-                        node.weight=-(1/(0+node.scale))*lib_vector.distanceMinus(node.position, camera);
-                        //if (node.weight<WEIGHTNODEMIN) node.alpha=0;
-                        if (node.weight<WEIGHTNODETEXTUREDMIN-WEIGHTGCTOL){
-                            //free the texture
-                            if (node.imageAvailable && node.textureLoaded 
-                                && !node.imageBusy) {
-                                node.imageAvailable=true,
-                                node.textureLoaded=false;
-                                GL.deleteTexture(node.texture);
-                                node.texture=null;
-                            }
-                        }
+                    _nodes.map(function(node){
+                        node.weight=-(1/(1+node.scale))*lib_vector.distanceMinus(node.position, camera);
                     });
 
                     //sort by weight
-                    nodes.sort(sortNode);
+                    _nodes.sort(sortNode);
                 }
 
 

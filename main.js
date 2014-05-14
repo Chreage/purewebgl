@@ -1,4 +1,5 @@
-"use strict"
+"use strict";
+
 var LABEL;
 var main=function() {
     LABEL=document.getElementById("label");

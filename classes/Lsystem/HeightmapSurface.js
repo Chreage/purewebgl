@@ -32,15 +32,19 @@ var HeightmapSurface=(function() {
     
             //river system
             
-            var _rivers=RiverSystem.instance({
-                heightMapTexture : that.get_normalTexture(),
-                hMax : spec.hMax || SETTINGS.Lsystems.hMax,
-                sizePx : SETTINGS.Lsystems.heightmapSizePx,
-                width : spec.AABB.xMax-spec.AABB.xMin+2*spec.margin,
-                height : spec.AABB.yMax-spec.AABB.yMin+2*spec.margin,
-                rain: 0.0001,
-                waterHMax: 0.7
-            });
+            var _rivers=false, _riversEnabled=false;
+            if (SETTINGS.Lsystems.enableRiver) {
+                _riversEnabled=true;
+                _rivers=RiverSystem.instance({
+                    heightMapTexture : that.get_normalTexture(),
+                    hMax : spec.hMax || SETTINGS.Lsystems.hMax,
+                    sizePx : SETTINGS.Lsystems.heightmapSizePx,
+                    width : spec.AABB.xMax-spec.AABB.xMin+2*spec.margin,
+                    height : spec.AABB.yMax-spec.AABB.yMin+2*spec.margin,
+                    rain: 0.0001,
+                    waterHMax: 0.7
+                });
+            }
            
             
     
@@ -56,8 +60,13 @@ var HeightmapSurface=(function() {
                 that.draw();
                 _gl.activeTexture(_gl.TEXTURE2);
                 _normalsTexture.draw();
-                _gl.activeTexture(_gl.TEXTURE4);
-                _rivers.draw();
+                
+                
+                if (_riversEnabled) {
+                    _gl.activeTexture(_gl.TEXTURE4);
+                    _rivers.draw();
+                }
+                
                 _gl.activeTexture(_gl.TEXTURE0);
                 _colorTexture.draw();
                 
@@ -69,7 +78,7 @@ var HeightmapSurface=(function() {
             
             that.drawPhysics=function(dt){
                 //apply LOD on water simulation (very expensive)
-                if (VUE.distanceToCamera(spec.centre)<SETTINGS.Lsystems.riversRefreshDistance){
+                if (_riversEnabled && VUE.distanceToCamera(spec.centre)<SETTINGS.Lsystems.riversRefreshDistance){
                     _rivers.compute(dt);
                 }
             };

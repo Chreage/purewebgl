@@ -6,13 +6,13 @@
  * 
  * spec.heightMapTexture : texture of the heightmap
  * spec.hMax             : height of the texture
- * spec.sizePx           : size of the heightmap in pixels
  * spec.width            : size along x axis
  * spec.height           : size along y axis
  * spec.simuSizePx       : size of the simulation texture in pixels
  * spec.rain             : rain coefficient
  * spec.gravity          : gravity
  * spec.waterHMax        : max height of the water
+ * avgStabilizationCoeff : spatial averaging speed and water height
  * 
  * spec.heightMapTexture is a floating point texture
  * height is stored in red channel, and normal in gba channels
@@ -32,13 +32,13 @@ var RiverSystem=(function() {
  
         _position_copy, _position_gpgpu, _position_rendering,
         
-        _sampler_copy,
+        _sampler_copy, _dx_copy, _dy_copy, _avgStabilizationCoeff_copy,
         
         _dx_gpgpu, _dy_gpgpu,  _scaleXY_gpgpu, _dt_gpgpu, _rain_gpgpu, _gravity_gpgpu,
         _terrainHMax_gpgpu, _waterHMax_gpgpu,
         _samplerWater_gpgpu, _samplerTerrain_gpgpu,
         
-        _samplerWater_rendering, _samplerMaterial_rendering, _samplerWaterPrevious_rendering,
+        _samplerWater_rendering, _samplerMaterial_rendering,
          _dx_rendering, _dy_rendering,
         
         _quadVerticesVBO, _quadIndicesVBO,
@@ -83,6 +83,10 @@ var RiverSystem=(function() {
             _shader_program_copy=get_shaderProgram(shader_vertex_source_copy, shader_fragment_source_copy, "RIVERSYSTEM COPY");
             
             _sampler_copy = _gl.getUniformLocation(_shader_program_copy, "sampler"),
+            _dx_copy = _gl.getUniformLocation(_shader_program_copy, "dx"),
+            _dy_copy = _gl.getUniformLocation(_shader_program_copy, "dx"),
+            _avgStabilizationCoeff_copy=_gl.getUniformLocation(_shader_program_copy,"avgStabilizationCoeff");
+                     
             
             _position_copy = _gl.getAttribLocation(_shader_program_copy, "position");
        
@@ -120,7 +124,6 @@ var RiverSystem=(function() {
             _dx_rendering = _gl.getUniformLocation(_shader_program_rendering, "dx"),
             _dy_rendering = _gl.getUniformLocation(_shader_program_rendering, "dy"),
             _samplerWater_rendering = _gl.getUniformLocation(_shader_program_rendering, "samplerWater"),
-            _samplerWaterPrevious_rendering = _gl.getUniformLocation(_shader_program_rendering, "samplerWaterPrevious"),
             _samplerMaterial_rendering = _gl.getUniformLocation(_shader_program_rendering, "samplerMaterial");
             
             _position_rendering = _gl.getAttribLocation(_shader_program_rendering, "position");
@@ -128,9 +131,7 @@ var RiverSystem=(function() {
             //init some uniforms
             _gl.useProgram(_shader_program_rendering);
             _gl.uniform1i(_samplerWater_rendering, 0);
-            _gl.uniform1i(_samplerMaterial_rendering, 1);
-            _gl.uniform1i(_samplerWaterPrevious_rendering, 2);
-            
+            _gl.uniform1i(_samplerMaterial_rendering, 1);         
             
             //QUAD VBOs
             _quadVerticesVBO = _gl.createBuffer ();
@@ -168,7 +169,8 @@ var RiverSystem=(function() {
             }
             
             //set default parameters
-            spec.simuSizePx = spec.simuSizePx || spec.sizePx,
+            spec.avgStabilizationCoeff=spec.avgStabilizationCoeff || 0.5,
+            spec.simuSizePx = spec.simuSizePx || 512,
             spec.rain = spec.rain || 0.0000001,
             spec.nPass = spec.nPass || 2,
             spec.gravity = spec.gravity ||0.9,
@@ -180,7 +182,7 @@ var RiverSystem=(function() {
             //it is a floating point texture
             var heightSpeed_texture=_gl.createTexture();
             _gl.bindTexture(_gl.TEXTURE_2D, heightSpeed_texture);            
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
@@ -199,7 +201,7 @@ var RiverSystem=(function() {
             //it is a floating point texture
             var heightSpeed_texture_copy=_gl.createTexture();
             _gl.bindTexture(_gl.TEXTURE_2D, heightSpeed_texture_copy);
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
@@ -215,7 +217,7 @@ var RiverSystem=(function() {
             //INIT WATER RENDERING TEXTURE
             var rendering_texture=_gl.createTexture();
             _gl.bindTexture(_gl.TEXTURE_2D, rendering_texture);            
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
             _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
             _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
@@ -244,10 +246,11 @@ var RiverSystem=(function() {
                 compute: function(dt){
                     rainTimer+=dt;
                     var rain=0;
-                    if (rainTimer>1){ //apply rain every second
+                    /*if (rainTimer>1){ //apply rain every second
                         rainTimer=0;
                         rain=spec.rain;
-                    }
+                    }*/
+                    rain=spec.rain;
                     _gl.disable(_gl.BLEND); //to use alpha channel like a normal channel
                     
                     _gl.clearColor(0,0,0,0);
@@ -269,6 +272,11 @@ var RiverSystem=(function() {
                     //bind texture
                     _gl.bindTexture(_gl.TEXTURE_2D, heightSpeed_texture);
                     
+                    //set uniforms
+                    _gl.uniform1f(_avgStabilizationCoeff_copy, spec.avgStabilizationCoeff);
+                    _gl.uniform1f(_dx_copy, dx),
+                    _gl.uniform1f(_dy_copy, dy);
+                            
                     //draw quad
                     _gl.vertexAttribPointer(_position_copy, 2, _gl.FLOAT, false,8,0);
                     _gl.drawElements(_gl.TRIANGLES, 6, _gl.UNSIGNED_SHORT, 0);
@@ -305,9 +313,7 @@ var RiverSystem=(function() {
                     _gl.bindTexture(_gl.TEXTURE_2D, heightSpeed_texture_copy);
                     
                     //draw quad
-                    //_gl.bindBuffer(_gl.ARRAY_BUFFER, _quadVerticesVBO) ;
                     _gl.vertexAttribPointer(_position_gpgpu, 2, _gl.FLOAT, false,8,0);
-                    //_gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, _quadIndicesVBO);
                     _gl.drawElements(_gl.TRIANGLES, 6, _gl.UNSIGNED_SHORT, 0);
                     
                     _gl.disableVertexAttribArray(_position_gpgpu);
@@ -323,9 +329,6 @@ var RiverSystem=(function() {
                     _gl.uniform1f(_dy_rendering, dy*2.1);
                     
                     //bind textures
-                    _gl.activeTexture(_gl.TEXTURE2);
-                    _gl.bindTexture(_gl.TEXTURE_2D, rendering_texture);
-                    
                     _gl.activeTexture(_gl.TEXTURE1);
                     _gl.bindTexture(_gl.TEXTURE_2D, _waterMaterialTexture);
                     
@@ -333,9 +336,7 @@ var RiverSystem=(function() {
                     _gl.bindTexture(_gl.TEXTURE_2D, heightSpeed_texture);
                     
                     //draw quad
-                    //_gl.bindBuffer(_gl.ARRAY_BUFFER, _quadVerticesVBO) ;
                     _gl.vertexAttribPointer(_position_rendering, 2, _gl.FLOAT, false,8,0);
-                    //_gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER, _quadIndicesVBO);
                     _gl.drawElements(_gl.TRIANGLES, 6, _gl.UNSIGNED_SHORT, 0);
                     
                     _gl.disableVertexAttribArray(_position_rendering);

@@ -50,7 +50,7 @@ var Scene=(function () {
                    draw: function(timestamp) {
                        if (!running || stop) return;
                        NNODESDISPLAYED=0,
-                       NNODESTEXTUREDDISPLAYED=0;
+                      // NNODESTEXTUREDDISPLAYED=0;
                        
                        Shaders.set_defaultShader();
                        GL.viewport(0.0, 0.0, CV.width, CV.height);
@@ -72,11 +72,11 @@ var Scene=(function () {
                                      * WEIGHTNODEINCREASE
                                     * Math.abs(dNodesDisplayed/NNODESDISPLAYEDMAX);
                      
-                        var dNodesTexturedDisplayed=Math.min(NNODESTEXTUREDDISPLAYED-NNODESTEXTUREDDISPLAYEDMAX, NNODESTEXTUREDDISPLAYEDMAX);
+                        /* var dNodesTexturedDisplayed=Math.min(NNODESTEXTUREDDISPLAYED-NNODESTEXTUREDDISPLAYEDMAX, NNODESTEXTUREDDISPLAYEDMAX);
                         WEIGHTNODETEXTUREDMIN+=((dNodesTexturedDisplayed>0)?1:-1)
                                      * WEIGHTNODEINCREASE
                                     * Math.abs(dNodesTexturedDisplayed/NNODESTEXTUREDDISPLAYEDMAX);
-                            
+                        */    
                             
                        window.requestAnimationFrame(that.draw);
                    },
