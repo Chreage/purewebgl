@@ -346,6 +346,23 @@ var RiverSystem=(function() {
                     _gl.flush();
                     _gl.depthMask(true);
                     _gl.clearColor(1,1,1,1);
+                },
+                
+                remove: function() {
+                    _gl.deleteTexture(heightSpeed_texture),
+                    _gl.deleteTexture(heightSpeed_texture_copy),
+                    _gl.deleteTexture(rendering_texture);
+            
+                    _gl.deleteFramebuffer(heightSpeed_FBO),
+                    _gl.deleteFramebuffer(heightSpeed_FBO_copy),
+                    _gl.deleteFramebuffer(rendering_FBO);
+            
+                    heightSpeed_texture=null,
+                    heightSpeed_texture_copy=null,
+                    rendering_texture=null,
+                    
+                    scaleXY=null;
+                    delete(that);
                 }
                 
                 

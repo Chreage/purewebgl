@@ -14,7 +14,7 @@ var WEIGHTNODEINCREASE=SETTINGS.culling.weightNodeIncrease;
 
 var NNODESDISPLAYED=0;
 
-var ERODETEXTURESSET, MOUNTAINTEXTURESSET, ALEXADATA=false, STOP=false;
+var ERODETEXTURESSET, MOUNTAINTEXTURESSET, ISLANDSDATA=false, STOP=false;
 
 
 var Contexte=(function() {
@@ -62,6 +62,8 @@ var Contexte=(function() {
             Texture.init();
             LodSpheres.init();
             LodGrids.init();
+            SuperIsland.init();
+            HeightmapSurface.init();
             RiverSystem.init(GL);
             Heightmap.init(GL);
             ErodeTexturesSet.init();
@@ -86,9 +88,11 @@ var Contexte=(function() {
                 if (nLoaded!==3) return;
                 nLoaded=0;
                 
-                var dataObj=JSON.parse(ALEXADATA);
+                SuperIsland.set_islandsData(ISLANDSDATA.islands);
+                
+                //var dataObj=JSON.parse(ALEXADATA);
                 //var alexa=dataObj.alexa;
-                var angle=0, radius=700;
+                /*var angle=0, radius=700;
                 dataObj.islands.map(function(island, index){
                     if (SETTINGS.debug.NislandsMax && index>=SETTINGS.debug.NislandsMax) return;
                     if (SETTINGS.debug.NlsystemsMax && island.lsystems.length>SETTINGS.debug.NlsystemsMax) {
@@ -107,11 +111,13 @@ var Contexte=(function() {
                     }); 
                     scene.add_island(builtIsland);
                 }); //end islands map
+                */
                 
-		delete(dataObj);
-		delete(ALEXADATA);
+		//delete(dataObj);
+		//delete(ALEXADATA);
                 setTimeout(scene.start, 100);
 		
+                //show Lsystem generations progressivly
                 var showGen=function() {
                     CURRENTGEN++;
                     if (CURRENTGEN>20) clearInterval(timerGen);
@@ -121,8 +127,12 @@ var Contexte=(function() {
 
              }; //end checkLoaded()
             
-             lib_ajax.get(SETTINGS.Lsystems.world+'json/world.json', function(data){
+             /*lib_ajax.get(SETTINGS.Lsystems.world+'json/world.json', function(data){
                  ALEXADATA=data;
+                 checkLoaded();
+             });*/
+             lib_ajax.get(SETTINGS.Lsystems.world+'../islandPos/islands.json', function(data){
+                 ISLANDSDATA=JSON.parse(data);
                  checkLoaded();
              });
              

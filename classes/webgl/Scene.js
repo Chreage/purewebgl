@@ -9,6 +9,7 @@ var Scene=(function () {
                 navigation=false, stop=false, running=false, cursor="auto", water=false;
             var currentLsystemIndex=0;
             var timer_physics;
+            var frameCounter=0;
 
             var drawObjet=function(objet) {
                 objet.draw();
@@ -56,8 +57,7 @@ var Scene=(function () {
                        GL.viewport(0.0, 0.0, CV.width, CV.height);
                        GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
                        VUE.draw();
-
-                       
+  
                        Shaders.unset_defaultShader();
                        
                        lsystems.map(drawObjet);
@@ -72,12 +72,9 @@ var Scene=(function () {
                                      * WEIGHTNODEINCREASE
                                     * Math.abs(dNodesDisplayed/NNODESDISPLAYEDMAX);
                      
-                        /* var dNodesTexturedDisplayed=Math.min(NNODESTEXTUREDDISPLAYED-NNODESTEXTUREDDISPLAYEDMAX, NNODESTEXTUREDDISPLAYEDMAX);
-                        WEIGHTNODETEXTUREDMIN+=((dNodesTexturedDisplayed>0)?1:-1)
-                                     * WEIGHTNODEINCREASE
-                                    * Math.abs(dNodesTexturedDisplayed/NNODESTEXTUREDDISPLAYEDMAX);
-                        */    
-                            
+                       frameCounter++;
+                       if (frameCounter%200===0) SuperIsland.update_islands();
+                       
                        window.requestAnimationFrame(that.draw);
                    },
 
@@ -106,6 +103,11 @@ var Scene=(function () {
                    
                    add_island: function(island){
                        islands.push(island);
+                   },
+                   
+                   remove_island: function(island){
+                       var islandIndex=islands.indexOf(island);
+                       if (islandIndex!==-1) islands.splice(islandIndex, 1);
                    },
 
                    set_navigation: function(nav){

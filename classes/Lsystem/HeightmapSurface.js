@@ -3,35 +3,36 @@
  *  spec.hMax : hMax
  *  spec.centre : centre
  *  
- *  spec.textureColorURL : url of the texture
- *  spec.textureNormalsURL
  *  
  *  
  *  instancied in Lsystem
  */
 
 var HeightmapSurface=(function() {
+    var __colorTexture, __normalsTexture;
+    
     return {
+        init: function() {
+            //material textures (color & bump)
+
+            __colorTexture=Texture.instance({
+                url: SETTINGS.Lsystems.textureColorURL
+            }),
+            __normalsTexture=Texture.instance({
+                url: SETTINGS.Lsystems.textureNormalsURL
+            });
+        },
+        
         instance: function(spec){
             var that=Heightmap.instance(spec);
             var _gl=spec.gl; //we do not use automatically the global webgl context GL
                              //so as we can use another webgl context
             
-            //material textures (color & bump)
-            var _colorTexture=Texture.instance({
-                url: spec.textureColorURL || SETTINGS.Lsystems.textureColorURL
-            });
-            var _normalsTexture=Texture.instance({
-                url: spec.textureNormalsURL || SETTINGS.Lsystems.textureNormalsURL
-            });
-    
             //position matrix
             var _matrix=lib_matrix4.get_I4();
             lib_matrix_mv.set_position(_matrix, spec.centre);
     
-    
             //river system
-            
             var _rivers=false, _riversEnabled=false;
             if (SETTINGS.Lsystems.enableRiver) {
                 _riversEnabled=true;
@@ -59,7 +60,7 @@ var HeightmapSurface=(function() {
                 _gl.activeTexture(_gl.TEXTURE1);
                 that.draw();
                 _gl.activeTexture(_gl.TEXTURE2);
-                _normalsTexture.draw();
+                __normalsTexture.draw();
                 
                 
                 if (_riversEnabled) {
@@ -68,7 +69,7 @@ var HeightmapSurface=(function() {
                 }
                 
                 _gl.activeTexture(_gl.TEXTURE0);
-                _colorTexture.draw();
+                __colorTexture.draw();
                 
                 var distance=VUE.distanceToCamera(spec.centre);
                 LodGrids.drawAsHeightMapSurface(_matrix, distance);

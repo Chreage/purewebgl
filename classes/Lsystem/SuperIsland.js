@@ -30,6 +30,8 @@
  * 
  */
 var SuperIsland=(function() {
+    var __islands=false, __gaussianPatchVBO,__gaussianPatchVBOIndices;
+    
     var debug={
             islandHeightMap: SETTINGS.debug.islandHeightMap,
             islandNormalMap: SETTINGS.debug.islandNormalMap
@@ -37,6 +39,94 @@ var SuperIsland=(function() {
     var _dt=SETTINGS.physics.dt/1000;    
             
     return {
+        init: function() {
+            //setup gaussian patch (textured with gaussTetxure)
+            __gaussianPatchVBO=VBO.instance({
+                tableau_js: [
+                    -0.5,-0.5,
+                    -0.5,0.5,
+                    0.5,0.5,
+                    0.5,-0.5
+                ]
+            });
+            __gaussianPatchVBOIndices=VBO_indices.instance({
+                tableau_js: [
+                    0,1,2, 0,2,3
+                ]
+            });
+        },
+        
+        set_islandsData: function(data){
+            __islands=data;
+            
+            __islands.map(function(island){
+                island.loaded=false,
+                island.loading=false,
+                island.webglLoaded=false,
+                island.instance=false;
+            });
+            SuperIsland.update_islands();
+        },
+        
+        update_islands: function() {
+            
+            //sort islands array from nearest to furthest
+            var camera=VUE.get_cameraPosition();
+            __islands.sort(function(islandA,islandB){
+                var dxA=islandA.xy[0]+camera[0],
+                    dyA=islandA.xy[1]+camera[1],
+                    dxB=islandB.xy[0]+camera[0],
+                    dyB=islandB.xy[1]+camera[1];
+                
+                return (dxA*dxA+dyA*dyA)-(dxB*dxB+dyB*dyB);
+            });
+            
+            
+            __islands.map(function(island, islandIndex){
+                if (islandIndex<4){ //island must be loaded
+                    if (island.loading || island.loaded) return;
+                    
+                    console.log('Load island n°'+island.i+" (position : "+islandIndex+")");
+                    //load island
+                    if (island.webglLoaded) {
+                        island.instance.webglLoad();
+                        island.loaded=true;
+                    } else {
+                        island.loading=true;
+                        lib_ajax.get(SETTINGS.Lsystems.world+'json/island_'+island.i+'.json', function(data){
+                            var islandData=JSON.parse(data);
+                            console.log('centre ', island.xy);
+
+                            island.instance=SuperIsland.instance({
+                                number: island.i,
+                                Lsystems: islandData.lsystems,
+                                centre: [island.xy[0], island.xy[1], 0],
+                                LsystemRadius: SETTINGS.islands.collisionRadius,
+                                LsystemRadiusMargin: SETTINGS.islands.collisionRadiusMargin,
+                                size: SETTINGS.islands.size,
+                                mountainTexturesSet: MOUNTAINTEXTURESSET
+                            }); 
+                            SCENE.add_island(island.instance);
+
+                            island.webglLoaded=true,
+                            island.loaded=true,
+                            island.loading=false;
+                        });
+                    } //end if island webglLoaded
+                } else if (islandIndex <7){ //we do not care (hysteresis effect)
+                    return;
+                } else if (islandIndex>=7) { //island must be unloaded
+                    if (island.loading || !island.loaded) return;
+                    
+                    SCENE.remove_island(island.instance);
+                    island.instance.webglUnload();
+                   
+                    console.log('Unload island n°'+island.i+" (position : "+islandIndex+")");
+                    island.loaded=false;
+                }
+            });
+        },
+        
         instance: function(spec){
             
             //if some parameters are not set, put it at default values
@@ -61,14 +151,12 @@ var SuperIsland=(function() {
     
             var matrix=lib_matrix4.get_I4(),
                 _gl=GL,
-                lsystems=[];
+                lsystems=[],
+                _patches=[];
  
-            var colorTexture=Texture.instance({
-                url: spec.textureColorURL || SETTINGS.islands.textureColorURL
-            }),
-                normalsTexture=Texture.instance({
-                url: spec.textureNormalsURL || SETTINGS.islands.textureNormalsURL
-            }),
+            var colorTexture, normalsTexture,
+                islandHeightMapTexture,islandHeightMapFBO,
+                islandNormalMapTexture,islandNormalMapFBO,
                 scaleSurface = [spec.size, spec.size],
                 centre2d=[spec.centre[0]-spec.size/2,spec.centre[1]-spec.size/2],
             
@@ -152,55 +240,6 @@ var SuperIsland=(function() {
             //var islandGaussTexture=Gauss.get_gaussTexture(_gl, spec.patchGaussSizePx, true);
             var islandGaussTexture=Gauss.get_islandGaussTexture();
              
-            //create island heightmap texture
-            var islandHeightMapTexture=_gl.createTexture();
-            _gl.bindTexture(_gl.TEXTURE_2D, islandHeightMapTexture);            
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
-            _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
-            _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
-            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.sizePx, spec.sizePx, 0, _gl.RGBA, _gl.FLOAT, null);
-            _gl.bindTexture(_gl.TEXTURE_2D, null);
-            
-            
-            //setup render to texture for heightmap
-            var islandHeightMapFBO=_gl.createFramebuffer();
-            _gl.bindFramebuffer(_gl.FRAMEBUFFER, islandHeightMapFBO);
-            _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, islandHeightMapTexture, 0);
-            _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
-                
-           
-            //setup normalMapTexture
-            var islandNormalMapTexture=_gl.createTexture();
-            _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
-            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
-            _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
-            _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
-            _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.sizePx, spec.sizePx, 0, _gl.RGBA, _gl.FLOAT, null);
-            _gl.bindTexture(_gl.TEXTURE_2D, null);
-
-            //setup render to texture for normalmap
-            var islandNormalMapFBO=_gl.createFramebuffer();
-            _gl.bindFramebuffer(_gl.FRAMEBUFFER, islandNormalMapFBO);
-            _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, islandNormalMapTexture, 0);
-            _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
-            
-            //setup gaussian patch (textured with gaussTetxure)
-            var gaussianPatchVBO=VBO.instance({
-                tableau_js: [
-                    -0.5,-0.5,
-                    -0.5,0.5,
-                    0.5,0.5,
-                    0.5,-0.5
-                ]
-            });
-            var gaussianPatchVBOIndices=VBO_indices.instance({
-                tableau_js: [
-                    0,1,2, 0,2,3
-                ]
-            });
-                        
             var drawLsystem=function(lsystem, index){
                 Shaders.set_heightMapSurface_shaders();
                 Shaders.set_island_heightMapSurface(spec.hMax, scaleIsland[index], offsetIsland[index]);
@@ -213,29 +252,70 @@ var SuperIsland=(function() {
             var _rivers=false, _riversEnabled=false;
             
             var that={
-                compute: function(){
-                    //compute height map
-                    
-                    Shaders.set_heightMap_shaders();
-                    
-                    if (!debug.islandHeightMap) _gl.bindFramebuffer(_gl.FRAMEBUFFER, islandHeightMapFBO);
-                    if (debug.islandHeightMap) {
-                        CV.width=spec.sizePx, CV.height=spec.sizePx;
-                        document.body.style.backgroundColor="white";
-                        SCENE.stop();
-                    }
-                    
-                    _gl.clearColor(0.,0.,0.,1.);
-                    _gl.disable(_gl.DEPTH_TEST);
-                    _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE);
-                    _gl.viewport(0.0, 0.0, spec.sizePx, spec.sizePx);
-                    _gl.clear(_gl.COLOR_BUFFER_BIT);
-                    
-                    
-                    gaussianPatchVBO.draw_heightMap();
-                    gaussianPatchVBOIndices.bind();
-                    _gl.bindTexture(_gl.TEXTURE_2D, islandGaussTexture);                    
-                    //draw patches loop
+                webglUnload: function(){
+                    colorTexture.remove();
+                    normalsTexture.remove();
+                    _gl.deleteTexture(islandHeightMapTexture);
+                    _gl.deleteTexture(islandNormalMapTexture);
+                    _gl.deleteFramebuffer(islandHeightMapFBO);
+                    _gl.deleteFramebuffer(islandNormalMapFBO);
+                    lsystems.map(function(lsystem){
+                       lsystem.webglUnload(); 
+                    });
+                    if (_riversEnabled) _rivers.remove();
+                    delete(_rivers);
+                    _rivers=false;
+                },
+                
+                webglLoad: function() {
+                    colorTexture=Texture.instance({
+                        url: spec.textureColorURL || SETTINGS.islands.textureColorURL
+                    }),
+                        normalsTexture=Texture.instance({
+                        url: spec.textureNormalsURL || SETTINGS.islands.textureNormalsURL
+                    });
+               
+                    //create island heightmap texture
+                    islandHeightMapTexture=_gl.createTexture();
+                    _gl.bindTexture(_gl.TEXTURE_2D, islandHeightMapTexture);            
+                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
+                    _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
+                    _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
+                    _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.sizePx, spec.sizePx, 0, _gl.RGBA, _gl.FLOAT, null);
+                    _gl.bindTexture(_gl.TEXTURE_2D, null);
+
+
+                    //setup render to texture for heightmap
+                    islandHeightMapFBO=_gl.createFramebuffer();
+                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, islandHeightMapFBO);
+                    _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, islandHeightMapTexture, 0);
+                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
+
+
+                    //setup normalMapTexture
+                    islandNormalMapTexture=_gl.createTexture();
+                    _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
+                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
+                    _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
+                    _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
+                    _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.sizePx, spec.sizePx, 0, _gl.RGBA, _gl.FLOAT, null);
+                    _gl.bindTexture(_gl.TEXTURE_2D, null);
+
+                    //setup render to texture for normalmap
+                    islandNormalMapFBO=_gl.createFramebuffer();
+                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, islandNormalMapFBO);
+                    _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, islandNormalMapTexture, 0);
+                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
+
+                    lsystems.map(function(lsystem){
+                       lsystem.webglLoad(); 
+                    });
+                    that.compute();
+                },
+                
+                computePatches: function() {
                     var x,y,i, lsi, lsj, k, patchScale, patchPosition=[0,0], patchAlpha, d;
                     
                     for (i=0; i<spec.nPatch; i++){
@@ -267,9 +347,42 @@ var SuperIsland=(function() {
                         patchScale=(spec.patchSizeAvgPx+ (Math.random()-0.5)*2*spec.patchSizeRandomPx)/spec.sizePx;
                         patchAlpha=spec.patchAlphaAvg+ (Math.random()-0.5)*2*spec.patchAlphaRandom;
                         
-                        Shaders.set_node_heightMap([patchScale,patchScale], patchPosition, patchAlpha);
-                        gaussianPatchVBOIndices.draw_Elements();
-                    } //end draw patches loop
+                        _patches.push({
+                            position: patchPosition,
+                            alpha: patchAlpha,
+                            scale: [patchScale,patchScale]
+                        });
+                        
+                    } //end draw patches loop                    
+                },
+                
+                compute: function(){
+                    //compute height map
+                    
+                    if (!debug.islandHeightMap) _gl.bindFramebuffer(_gl.FRAMEBUFFER, islandHeightMapFBO);
+                    
+                    Shaders.set_heightMap_shaders();
+                    
+                    if (debug.islandHeightMap) {
+                        CV.width=spec.sizePx, CV.height=spec.sizePx;
+                        document.body.style.backgroundColor="white";
+                        SCENE.stop();
+                    }
+                    
+                    _gl.clearColor(0.,0.,0.,1.);
+                    _gl.disable(_gl.DEPTH_TEST);
+                    _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE);
+                    _gl.viewport(0.0, 0.0, spec.sizePx, spec.sizePx);
+                    _gl.clear(_gl.COLOR_BUFFER_BIT);
+                    
+                    __gaussianPatchVBO.draw_heightMap();
+                    __gaussianPatchVBOIndices.bind();
+                    _gl.bindTexture(_gl.TEXTURE_2D, islandGaussTexture); 
+                    
+                    _patches.map(function(patch){
+                        Shaders.set_node_heightMap(patch.scale, patch.position, patch.alpha);
+                        __gaussianPatchVBOIndices.draw_Elements();
+                    });
                     
                     _gl.bindTexture(_gl.TEXTURE_2D, null);
                     _gl.flush();                    
@@ -302,13 +415,13 @@ var SuperIsland=(function() {
 
                     _gl.activeTexture(_gl.TEXTURE0);
                     _gl.bindTexture(_gl.TEXTURE_2D, islandHeightMapTexture);
-                    gaussianPatchVBO.draw_normalMap();
-                    gaussianPatchVBOIndices.draw();
+                    __gaussianPatchVBO.draw_normalMap();
+                    __gaussianPatchVBOIndices.draw();
                     Shaders.unset_normals_shaders();
                     
                     _gl.enable(_gl.DEPTH_TEST);
                     _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA);
-                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
+                    
                     
                     //generate mipmaps
                     _gl.bindTexture(_gl.TEXTURE_2D, islandNormalMapTexture);
@@ -330,6 +443,8 @@ var SuperIsland=(function() {
                         });
                         _riversEnabled=true;
                     } //end if enableRivers
+                    
+                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
                 }, //end compute
                 
                 //draw in the render loop
@@ -396,8 +511,8 @@ var SuperIsland=(function() {
                      _gl.disable(_gl.DEPTH_TEST);
 
                      _gl.bindTexture(_gl.TEXTURE_2D, islandHeightMapTexture);
-                     gaussianPatchVBO.draw_textureRead();
-                     gaussianPatchVBOIndices.draw();
+                     __gaussianPatchVBO.draw_textureRead();
+                     __gaussianPatchVBOIndices.draw();
                      
                      _gl.flush();                     
                      _gl.readPixels(0,0,spec.sizePx, spec.sizePx, _gl.RGBA, _gl.UNSIGNED_BYTE, _pixelsBuffer);
@@ -437,15 +552,6 @@ var SuperIsland=(function() {
                                 x2=Math.ceil(xPx),  y2=Math.ceil(yPx);
                                     
                             //height between 0 and 255
-                            /*var h255=((x1-x2)*(y1-y2))?lib_maths.bilinear_interpolation(
-                                    xPx, yPx,
-                                    x1, y1,
-                                    x2, y2,
-                                    getH255(x1,y1),
-                                    getH255(x1,y2),
-                                    getH255(x2,y1),
-                                    getH255(x2,y2)
-                                    ):getH255(x1,y1);*/
                             var h255=lib_maths.bilinear_interpolation(
                                     xPx, yPx,
                                     x1, y1,
@@ -484,10 +590,15 @@ var SuperIsland=(function() {
                 
             }; //end that
             
-            that.compute();
+            that.computePatches();
+            that.webglLoad();
+            //that.compute();
+            
+    
             if (!debug.islandHeightMap && !debug.islandNormalMap){
                 that.moveNodesAbove();
             }
+            
             delete(spec.Lsystems);
             
             return that;

@@ -7,7 +7,7 @@ var SETTINGS={
         islandNormalMap: false,  //if true, display island normalmap and exit
         hideSpheres :     false,   //if true, hide Spheres
         ErodeTexture:     false,  //if true, display Lsystem heighmap with erosion and exit
-        noErosionLsystems: true,  //if true, do not erode Lsystems
+        noErosionLsystems: false,  //if true, do not erode Lsystems
         noOctree:          false,   //if true, do not compute L-system octree
         NnodesMax:         0,    //max spheres number. 0 to disable it
         NnodesMaxPerLsystem:0,    //max nodes per lsystem. 0 to disable it
@@ -41,11 +41,13 @@ var SETTINGS={
     
     //show only nearest spheres
     culling: {
-        NSpheres : 2000,    //total number of sphere to display on a simple rendering
+        NSpheres : 4000,    //total number of sphere to display on a simple rendering
         weightAlphaTol: 10, //spheres between weightmin and this weight are semi-transp
         weightNodeIncrease: 1.1, //used in Scene class in render loop to adjust weightmin. higher value -> reactivity but may be unstable
         maxTextureDistance: 180, //load texture atlas only if center of the Lsystem is closer to the camera than this distance in world units
-	maxSpheresTextureAtlasReqs: 4 //max simultaneous texture atlas request for lsystems
+	maxSpheresTextureAtlasReqs: 4, //max simultaneous texture atlas request for lsystems
+        maxLsystemTextureAtlasLoaded: 48, //max Lsystem texture atlas loaded
+        lsystemTextureAtlasUnload: 12    //when there are more than maxLsystemTextureAtlasLoaded texture atlas loaded, how texture atlas to remove
     },
     
     //lsystems settings
@@ -100,9 +102,9 @@ var SETTINGS={
         mountainTexturesURL: ['images/textures/erosion/mountain1024.png'],  //list of mountain heightmaps which will be randomly applied to the island heightmap
         
         
-        gridDistanceLodMin: 200,                        //distance from the camera to the center of the grid from which grid is display with its minimum LOD
+        gridDistanceLodMin: 300,                        //distance from the camera to the center of the grid from which grid is display with its minimum LOD
         hideDistance: 250,                              //do not draw the island if it is more distant than this distance
-        enableRivers: false,                            //enable/disable rivers simulation
+        enableRivers: true,                            //enable/disable rivers simulation
         riversRefreshDistance: 100                      //refresh rivers system only if distance to camera is smaller than this distance
     },
     
@@ -118,7 +120,7 @@ var SETTINGS={
     
     //works for super island grid and Lsystem grid
     grids: {
-       LOD0Size: 400, //size of the grid at LOD0
+       LOD0Size: 300, //size of the grid at LOD0
        nLods: 6       //number of LOD levels
     },
     

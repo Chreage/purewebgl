@@ -5,7 +5,9 @@
  * spec.lsystemNumber : number of the lsystem
  */
 var Lsystem=(function() {
-     var __NimageReqs=0;
+     var __NimageReqs=0,
+         __NtexturesLoaded=0,
+         __LsystemWithTextureLoaded=[];
      
      return {
          instance: function(spec){
@@ -123,6 +125,9 @@ var Lsystem=(function() {
                 get_AABB: function(){
                     return AABB;
                 },
+                get_centre: function() {
+                    return spec.centre;
+                },
                 
                 //COMPUTERS
                 computeOctree: function(){
@@ -132,6 +137,16 @@ var Lsystem=(function() {
                             nodes: _nodes
                         });
                     }
+                },
+                
+                //unload webgl resources to free GPU mem. called by SuperIsland
+                webglUnload: function() {
+                    that.unload_texture();
+                    heightmapSurface.webglUnload();
+                },
+                
+                webglLoad : function() {
+                    heightmapSurface.webglLoad();
                 },
                 
                 //DYNAMIC METHODS
@@ -149,12 +164,27 @@ var Lsystem=(function() {
 		        __NimageReqs++;
                         var textureImage=new Image();
                         textureImage.onload=function() {
-			    __NimageReqs--;
+			    __NimageReqs--,
+                            __NtexturesLoaded++,
                             _textureLoading=false,
                             _textureLoaded=true,
+                            __LsystemWithTextureLoaded.push(that),
                             _texture=GL.createTexture(),
                             _textureWidth=textureImage.width,
                             _textureHeight=textureImage.height;
+                            
+                            //unload textures
+                            if (__LsystemWithTextureLoaded.length>SETTINGS.culling.maxLsystemTextureAtlasLoaded){
+                                console.log("Lsystems - garbage collector");
+                                __LsystemWithTextureLoaded.sort(function(lsa,lsb){
+                                    return VUE.distanceToCamera(lsa.get_centre())-VUE.distanceToCamera(lsb.get_centre());
+                                });
+                                for (var i=0; i<SETTINGS.culling.lsystemTextureAtlasUnload; i++){
+                                    __LsystemWithTextureLoaded.unload_texture();
+                                }
+                                __LsystemWithTextureLoaded.splice(0,SETTINGS.culling.lsystemTextureAtlasUnload);
+                            }
+                            
                     
                             GL.bindTexture(GL.TEXTURE_2D, _texture);
                             GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
@@ -200,6 +230,16 @@ var Lsystem=(function() {
                     //if (_draw) {
                         Shaders.unset_defaultShader();
                     //}
+                },
+                
+                unload_texture: function() {
+                    if (!_textureLoaded) return;
+                    GL.deleteTexture(_texture);
+                    _texture=null,
+                    _textureLoaded=false,
+                    _textureLoading=false,
+                    _draw=false;
+                    __NtexturesLoaded--;
                 },
                 
                 drawPhysics: function(dt) {

@@ -62,9 +62,10 @@ var Heightmap=(function() {
                 patchAlphaMin=SETTINGS.Lsystems.heightMapPatchAlphaMin;
             
             //create textures
-            var heightMapTexture=_gl.createTexture(),
-                normalMapTexture=_gl.createTexture();
-                //get gauss texture as floating point texture
+            var heightMapTexture, normalMapTexture;
+            
+/*            heightMapTexture=_gl.createTexture(),
+            normalMapTexture=_gl.createTexture();
             
             //setup heightMapTexture
             _gl.bindTexture(_gl.TEXTURE_2D, heightMapTexture);            
@@ -76,10 +77,8 @@ var Heightmap=(function() {
             _gl.bindTexture(_gl.TEXTURE_2D, null);
 
             //setup render to texture for heightmap
-            //var heightMapFBO=_gl.createFramebuffer();
             _gl.bindFramebuffer(_gl.FRAMEBUFFER, _heightMapFBO);
             _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, heightMapTexture, 0);
-            //_gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
 
             //setup normalMapTexture
             _gl.bindTexture(_gl.TEXTURE_2D, normalMapTexture);
@@ -91,11 +90,10 @@ var Heightmap=(function() {
             _gl.bindTexture(_gl.TEXTURE_2D, null);
 
             //setup render to texture for normalmap
-            //var normalMapFBO=_gl.createFramebuffer();
             _gl.bindFramebuffer(_gl.FRAMEBUFFER, _normalMapFBO);
             _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, normalMapTexture, 0);
-            //_gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
-
+            */
+            
             //compute scale factors
             var heightMapWidth=spec.AABB.xMax-spec.AABB.xMin,
                 heightMapHeight=spec.AABB.yMax-spec.AABB.yMin,
@@ -151,15 +149,54 @@ var Heightmap=(function() {
             
             
             var that={
+                webglLoad: function() {
+                    heightMapTexture=_gl.createTexture(),
+                    normalMapTexture=_gl.createTexture();
+
+                    //setup heightMapTexture
+                    _gl.bindTexture(_gl.TEXTURE_2D, heightMapTexture);            
+                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
+                    _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
+                    _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
+                    _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.size, spec.size, 0, _gl.RGBA, _gl.FLOAT, null);
+                    _gl.bindTexture(_gl.TEXTURE_2D, null);
+
+                    //setup render to texture for heightmap
+                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, _heightMapFBO);
+                    _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, heightMapTexture, 0);
+
+                    //setup normalMapTexture
+                    _gl.bindTexture(_gl.TEXTURE_2D, normalMapTexture);
+                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR_MIPMAP_LINEAR);
+                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
+                    _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
+                    _gl.texParameteri( _gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
+                    _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA,spec.size, spec.size, 0, _gl.RGBA, _gl.FLOAT, null);
+                    _gl.bindTexture(_gl.TEXTURE_2D, null);
+
+                    //setup render to texture for normalmap
+                    _gl.bindFramebuffer(_gl.FRAMEBUFFER, _normalMapFBO);
+                    _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, normalMapTexture, 0);
+                    
+                    that.compute();
+                },
+                
+                webglUnload: function() {
+                    _gl.deleteTexture(heightMapTexture),
+                    _gl.deleteTexture(normalMapTexture);
+                },
+                
                 get_normalTexture: function() {
                     return normalMapTexture;
                 },
                 
                 compute: function() {
                     //COMPUTE HEIGHTMAP
+                    if (!debug.heightMap) _gl.bindFramebuffer(_gl.FRAMEBUFFER, _heightMapFBO);
+                    
                     Shaders.set_heightMap_shaders();
                    
-                    if (!debug.heightMap) _gl.bindFramebuffer(_gl.FRAMEBUFFER, _heightMapFBO);
                     if (debug.heightMap) SCENE.stop();
                     
                     _gl.clearColor(0.,0.,0.,1.);
@@ -208,7 +245,7 @@ var Heightmap=(function() {
                     _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA);
                     
                     _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
-
+                    
                     //generate mipmaps
                     _gl.bindTexture(_gl.TEXTURE_2D, normalMapTexture);
                     _gl.generateMipmap(_gl.TEXTURE_2D);
@@ -278,7 +315,9 @@ var Heightmap=(function() {
                 }
                 
             };
-            that.compute();
+            that.webglLoad();
+            
+            //that.compute();
             return that;
         }
     };

@@ -6,3 +6,22 @@
 - shader saturation
 - effet d'approche/detection collision heightmap
 - socle des spheres
+
+
+Mail du 26 mai :
+- positionnement des îles côté serveur
+- chargement progressif par île.
+
+- rétablissement et optimisation de l'eau.
+- socle des sphères
+- joli shader pour l'effet onmousedown
+- correction d'un bug d'aliasing avec les texture atlas.
+
+- navigation ergonomique
+- barre de chargement
+- rédaction d'une petite doc,
+
+- nettoyage du code
+- test multiplateformes
+
+J'estime ça a entre 4 et 6 jours de taf.

@@ -6,7 +6,7 @@
 
 //parameters
 $inputFile='input/world.csv';
-$outputFile='output/json/world.json';
+$outputFile='output/json/island';
 $maxURL=0;
 //$atlasURL='../php/favicons/favicons.png';
 $atlasURL='../../horsGitHub/favicons.png';
@@ -77,9 +77,9 @@ foreach($csvArray as $node){
     $lsystemNum=$lsystemsNumAlias[$islandId][$lsystemId];
     
     //create node 
-    $nodeObj=array('x'=>$x,
-                   'y'=>$y,
-                   'p'=>$p,
+    $nodeObj=array('x'=>floatval($x),
+                   'y'=>floatval($y),
+                   'p'=>intval($p),
 		   'url'=>$url,
                    'u'=>0,
                    'v'=>0);
@@ -173,10 +173,17 @@ imagedestroy($atlas);
 
 //export output object as JSON
 echoFlush("Encode \$word object to JSON and export it to $outputFile");
-$jsonWorld=json_encode($world);
-file_put_contents($outputFile, $jsonWorld);
-chmod($outputFile, 0777);
-$jsonWorld=null;
+//$jsonWorld=json_encode($world);
+//file_put_contents($outputFile, $jsonWorld);
+//chmod($outputFile, 0777);
+//jsonWorld=null;
+foreach($world['islands'] as $islandNumber=>$island) {
+    $jsonIsland=json_encode($island);
+    $jsonURL=$outputFile.'_'.$islandNumber.'.json';
+    file_put_contents($jsonURL, $jsonIsland);
+    chmod($jsonURL, 0777);
+//jsonWorld=null;
+}
 
 echoFlush('Done bro :)');
 ob_end_flush();

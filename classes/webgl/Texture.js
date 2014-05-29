@@ -58,6 +58,10 @@ var Texture=(function () {
                    draw: function() {
                        if (!loaded) return;
                        GL.bindTexture(GL.TEXTURE_2D, texture);
+                   },
+                   remove: function() {
+                       GL.deleteTexture(texture);
+                       delete(that);
                    }
             };
             return that;
